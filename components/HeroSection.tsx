@@ -50,7 +50,7 @@ const HeroSection = () => {
         <div className="h-2/3 w-full  relative  ">
           <Image
             className="object-cover max-h-full bottom-0 "
-            src="/assets/landing-page/HeroForeground2.png "
+            src="/assets/landing-page/image-group.png"
             width={1000}
             height={1000}
             // fill={true}

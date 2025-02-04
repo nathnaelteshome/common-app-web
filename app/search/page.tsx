@@ -1,11 +1,5 @@
-import Search from "@/components/Search";
-
 const page = () => {
-  return (
-    <div>
-      <Search />
-    </div>
-  );
+  return <div></div>;
 };
 
 export default page;

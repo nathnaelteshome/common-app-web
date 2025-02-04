@@ -1,6 +1,7 @@
 "use client";
 import FilterSidebar from "@/components/FilterSidebar";
 import UniversitySearch from "@/components/Search";
+import TopBar from "@/components/TopBar";
 import { Poppins } from "next/font/google";
 import { useState } from "react";
 const poppins = Poppins({
@@ -13,9 +14,12 @@ export default function Layout({}: Readonly<{
 }>) {
   const [searchTerm, setSearchTerm] = useState("");
   return (
-    <div className={` antialiased ${poppins.className} flex`}>
-      <FilterSidebar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <UniversitySearch searchTerm={searchTerm} />
+    <div>
+      <TopBar />
+      <div className={` antialiased ${poppins.className} flex`}>
+        <FilterSidebar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <UniversitySearch searchTerm={searchTerm} />
+      </div>
     </div>
   );
 }

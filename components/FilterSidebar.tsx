@@ -30,16 +30,6 @@ const FilterSidebar = ({ searchTerm, setSearchTerm }: FilterSidebarProps) => {
             ))}
           </div>
         ))}
-        <h4 className="font-medium mb-1">Location</h4>
-        <label className="block">
-          <input type="checkbox" /> Addis Ababa
-        </label>
-        <label className="block">
-          <input type="checkbox" /> Mekelle
-        </label>
-        <label className="block">
-          <input type="checkbox" /> Bahir Dar
-        </label>
       </div>
     </div>
   );

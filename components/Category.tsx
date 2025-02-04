@@ -2,6 +2,7 @@ import { disiplineCategories } from "@/public/data/data";
 import Image from "next/image";
 
 import { Epilogue } from "next/font/google";
+import Link from "next/link";
 const epilogue = Epilogue({
   subsets: ["latin"],
   display: "swap",
@@ -21,15 +22,17 @@ const Category = () => {
       {/* category container */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 lg:grid-cols-3 lg:gap-x-28 lg:gap-y-8 p-24 ">
         {disiplineCategories.map((category, index) => (
-          <div
-            key={index}
-            className={`flex items-center min-w-72 p-2 lg:p-6 lg:gap-4 rounded-lg gap-2 ${category.color} bg-opacity-50 bg `}
-          >
-            <div className="relative p-2 rounded-full">
-              <Image src={category.icon} width={40} height={40} alt="icon" />
+          <Link href={`/categories/?category=${category.name}`} key={index}>
+            <div
+              key={index}
+              className={`flex items-center min-w-72 p-2 lg:p-6 lg:gap-4 rounded-lg gap-2 ${category.color} bg-opacity-50 bg `}
+            >
+              <div className="relative p-2 rounded-full">
+                <Image src={category.icon} width={40} height={40} alt="icon" />
+              </div>
+              <span className="font-semibold">{category.name}</span>
             </div>
-            <span className="font-semibold">{category.name}</span>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

@@ -37,14 +37,15 @@ const Footer = () => {
       <div className="p-32 grid gap-x-2 gap-y-6 grid-cols-1 text-gray-400  md:grid-cols-4">
         <div>
           <h1 className="text-3xl font-bold">Common Apply</h1>
-          <p className="py-10">
-            Interdum velit laoreet id donec ultrices tincidunt arcu. Tincidunt
-            tortor aliqua mfacilisi cras fermentum odio eu.
+          <p className="py-10 pr-10 ">
+            We are a team of talented professionals who are always ready to take
+            the extra mile to help you achieve your dreams. Our team is
+            dedicated to providing you with
           </p>
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Our Services:</h1>
-          <ul className="py-5 list-disc list-inside">
+          <h1 className="text-3xl font-bold">Our Services</h1>
+          <ul className="py-10 list-disc list-inside">
             <li>Home</li>
             <li>About</li>
             <li>Gallery</li>
@@ -53,7 +54,7 @@ const Footer = () => {
         </div>
         <div>
           <h1 className="text-3xl font-bold">Gallery</h1>
-          <div className="grid grid-cols-2 justify-end items-center gap-4">
+          <div className="grid py-10 grid-cols-2 pr-12 justify-center items-center gap-4">
             <Image
               src="/assets/landing-page/teaching1.jpg"
               width={100}
@@ -86,7 +87,7 @@ const Footer = () => {
         </div>
         <div className="flex flex-col">
           <h1 className="text-3xl font-bold">Subscribe</h1>
-          <div className="flex items-center mt-2 justify-center">
+          <div className="flex py-10 items-center mt-2">
             <div className="flex flex-col p-2 bg-white rounded-md w-fit">
               <input
                 type="text"

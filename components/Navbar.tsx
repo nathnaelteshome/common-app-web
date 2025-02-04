@@ -26,7 +26,9 @@ const Navbar = () => {
       </div>
       <div className="hidden lg:flex gap-6 font-mono justify-center items-center text-blue-900 ">
         {Object.values(navLinks).map((link, index) => (
-          <div key={index}>{link.label}</div>
+          <Link key={index} href={link.href}>
+            <div>{link.label}</div>
+          </Link>
         ))}
       </div>
       <div className="flex items-center  ">

@@ -11,7 +11,7 @@ const epilogue = Epilogue({
 
 const Category = () => {
   return (
-    <section className="p-14 flex justify-center items-center gap-6 flex-col">
+    <section className="p-14 flex justify-center items-center gap-6 flex-col border border-red-900">
       <h3 className="uppercase text-[#704fe6] py-2 px-6 border bg-[#E9E2FF] w-fit rounded-sm">
         Categories
       </h3>
@@ -20,7 +20,7 @@ const Category = () => {
         Browse By Categories
       </div>
       {/* category container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 lg:grid-cols-3 lg:gap-x-28 lg:gap-y-8 p-24 ">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-x-12 gap-y-4 lg:grid-cols-3 lg:gap-x-28 lg:gap-y-8 p-24 ">
         {disiplineCategories.map((category, index) => (
           <Link href={`/categories/?category=${category.name}`} key={index}>
             <div

@@ -15,7 +15,7 @@ export default function Layout({}: Readonly<{
   const [searchTerm, setSearchTerm] = useState("");
   return (
     <div>
-      <TopBar />
+      <TopBar title="Colleges" pageName="college"/>
       <div className={` antialiased ${poppins.className} flex`}>
         <FilterSidebar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <UniversitySearch searchTerm={searchTerm} />

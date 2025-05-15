@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FaPhoneAlt } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
+import TimeStamp from "./TimeStamps";
 
 const Footer = () => {
   return (
@@ -106,7 +107,7 @@ const Footer = () => {
       </div>
       <div>
         <p className="text-center py-3 text-gray-400">
-          &copy; 2024 Common Apply. All rights reserved.
+          &copy; <TimeStamp /> Common Apply. All rights reserved.
         </p>
       </div>
     </div>

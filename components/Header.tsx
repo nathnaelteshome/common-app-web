@@ -1,12 +1,12 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   FaFacebookF,
   FaInstagram,
   FaLinkedin,
   FaYoutube,
-} from "react-icons/fa";
-import { HiOutlinePhone } from "react-icons/hi";
-import { IoLocationOutline, IoMailOutline } from "react-icons/io5";
+} from 'react-icons/fa';
+import { HiOutlinePhone } from 'react-icons/hi';
+import { IoLocationOutline, IoMailOutline } from 'react-icons/io5';
 
 const Header = () => {
   return (
@@ -32,19 +32,19 @@ const Header = () => {
       </div>
       <div className="hidden lg:flex h-full justify-around px-3 items-center gap-3 bg-white">
         <Link href="https://www.facebook.com">
-          <FaFacebookF style={{ color: "#17254E" }} />
+          <FaFacebookF style={{ color: '#17254E' }} />
         </Link>
 
         <Link href="https://www.instagram.com/">
-          <FaInstagram style={{ color: "#17254E" }} />
+          <FaInstagram style={{ color: '#17254E' }} />
         </Link>
 
         <Link href="https://www.linkedin.com">
-          <FaLinkedin style={{ color: "#17254E" }} />
+          <FaLinkedin style={{ color: '#17254E' }} />
         </Link>
 
         <Link href="https://www.youtube.com">
-          <FaYoutube style={{ color: "#17254E" }} />
+          <FaYoutube style={{ color: '#17254E' }} />
         </Link>
       </div>
     </div>

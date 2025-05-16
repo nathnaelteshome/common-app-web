@@ -95,8 +95,8 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Create Account Button */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
+          {/* Create Account Button */}
           <div className="bg-primary flex justify-between items-center sm:w-40 lg:w-48 rounded-full">
             <span className="text-white hidden sm:block text-sm flex-1 text-center">
               Create Account
@@ -108,6 +108,21 @@ const Navbar = () => {
             >
               <Link href="/auth">
                 <ChevronRight />
+              </Link>
+            </Button>
+          </div>
+          {/* sign in button */}
+          <div className="bg-white border  border-primary flex justify-between items-center sm:w-40 lg:w-48 rounded-full">
+            <span className="text-primary hidden sm:block text-sm flex-1 text-center">
+              Sign-in
+            </span>
+            <Button
+              className="bg-primary rounded-full aspect-square hover:bg-gray-300"
+              variant="outline"
+              size="icon"
+            >
+              <Link href="/auth">
+                <ChevronRight className="bg-white rounded-full" />
               </Link>
             </Button>
           </div>

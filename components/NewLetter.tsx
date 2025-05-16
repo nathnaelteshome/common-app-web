@@ -21,7 +21,7 @@ const NewLetter = () => {
       </div>
 
       {/* right section */}
-      <div className="flex-1 flex justify-center items-center">
+      <div className="flex-1 flex justify-center items-center border border-primary">
         <div className="flex p-2 bg-white rounded-md w-fit">
           <input
             type="text"

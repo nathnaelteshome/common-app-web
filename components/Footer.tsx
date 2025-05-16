@@ -35,13 +35,12 @@ const Footer = () => {
         ))}
       </div>
       {/* botton section */}
-      <div className="p-32 grid gap-x-2 gap-y-6 grid-cols-1 text-gray-400  md:grid-cols-4">
+      <div className="p-32 grid gap-x-2 gap-y-6 grid-cols-1 text-gray-400  md:grid-cols-2 lg:grid-cols-4">
         <div>
           <h1 className="text-3xl font-bold">Common Apply</h1>
           <p className="py-10 pr-10 ">
             We are a team of talented professionals who are always ready to take
-            the extra mile to help you achieve your dreams. Our team is
-            dedicated to providing you with
+            the extra mile to help you achieve your dreams.
           </p>
         </div>
         <div>

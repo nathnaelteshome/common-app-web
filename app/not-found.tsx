@@ -1,15 +1,12 @@
-'use client';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
-import TopBar from '@/components/TopBar';
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 const NotFoundPage = () => {
   return (
     <>
       {/* Main Content */}
       <main className="flex-grow">
-        <TopBar title="404" pageName="Page Not Found" />
-
         {/* 404 Content */}
         <div className="container mx-auto py-20 px-4">
           <div className="grid md:grid-cols-2 gap-10 items-center">
@@ -22,7 +19,7 @@ const NotFoundPage = () => {
                 exist. Please check the URL or return to the homepage.
               </p>
               <Link
-                href={'/#'}
+                href={"/#"}
                 className="inline-flex items-center bg-[#111d42] text-white px-6 py-3 rounded-md hover:bg-[#1a2a5e] transition-colors"
               >
                 <ArrowLeft size={18} className="mr-2" />

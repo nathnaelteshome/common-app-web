@@ -10,6 +10,7 @@ import {
   Youtube,
 } from "lucide-react";
 import Image from "next/image";
+import TimeStamp from "./TimeStamps";
 
 export function Footer() {
   return (
@@ -153,9 +154,7 @@ export function Footer() {
       <div className="border-t border-blue-600 py-6">
         <div className="container mx-auto px-4 text-center text-blue-200">
           <p>
-            Copyright © 2024{" "}
-            <span className="text-white font-semibold">CommApply</span> || All
-            Rights Reserved
+            &copy; <TimeStamp /> Common Apply. All rights reserved.
           </p>
         </div>
       </div>

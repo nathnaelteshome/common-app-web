@@ -2,20 +2,35 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuthStore } from "@/store/auth-store"
+import { useAuth } from "@/hooks/use-auth"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { StudentDashboard } from "@/components/student-dashboard"
 
 export default function StudentPage() {
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== "student") {
-      router.push("/auth/sign-in")
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push("/auth/sign-in?redirect=/student")
+      } else if (user?.role !== "student") {
+        router.push("/unauthorized")
+      }
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, isLoading, user, router])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || user?.role !== "student") {
     return null

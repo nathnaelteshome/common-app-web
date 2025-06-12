@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
+import Image from "next/image"
 
 export function AboutSection() {
   return (
@@ -10,21 +10,21 @@ export function AboutSection() {
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
               <Image
-                src="/assets/landing-page/image 12.jpg"
+                src="/placeholder.svg?height=200&width=200&query=graduation ceremony with students throwing caps"
                 alt="Graduation"
                 width={200}
                 height={200}
                 className="rounded-lg"
               />
               <Image
-                src="/assets/landing-page/image 10.jpg"
+                src="/placeholder.svg?height=200&width=200&query=historic university building with tower"
                 alt="University building"
                 width={200}
                 height={200}
                 className="rounded-lg"
               />
               <Image
-                src="/assets/landing-page/image 12.jpg"
+                src="/placeholder.svg?height=200&width=200&query=students walking on university campus"
                 alt="Campus life"
                 width={200}
                 height={200}
@@ -61,35 +61,29 @@ export function AboutSection() {
             <h2 className="text-4xl font-bold text-primary font-sora">
               Learn & Grow Your{" "}
               <span className="relative">
-                Skills
-                <span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"></span>
+                Skills<span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"></span>
               </span>{" "}
               With The Amazing Colleges
             </h2>
 
             <p className="text-gray-600 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+              dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold text-primary mb-2">
-                  FLEXIBLE ENVIRONMENT
-                </h3>
+                <h3 className="font-semibold text-primary mb-2">FLEXIBLE ENVIRONMENT</h3>
                 <p className="text-gray-600 text-sm">
-                  Suspendisse ultrice gravida dictum fusce placerat ultricies
-                  integer quis auctor elit sed vulputate mi sit.
+                  Suspendisse ultrice gravida dictum fusce placerat ultricies integer quis auctor elit sed vulputate mi
+                  sit.
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-primary mb-2">
-                  EXCELLENT INSTRUCTORS
-                </h3>
+                <h3 className="font-semibold text-primary mb-2">EXCELLENT INSTRUCTORS</h3>
                 <p className="text-gray-600 text-sm">
-                  Suspendisse ultrice gravida dictum fusce placerat ultricies
-                  integer quis auctor elit sed vulputate mi sit.
+                  Suspendisse ultrice gravida dictum fusce placerat ultricies integer quis auctor elit sed vulputate mi
+                  sit.
                 </p>
               </div>
             </div>
@@ -102,5 +96,5 @@ export function AboutSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

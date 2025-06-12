@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
+import Image from "next/image"
 
 export function HeroSection() {
   return (
@@ -16,9 +16,7 @@ export function HeroSection() {
               Achieving Your Dreams Through Education
             </h1>
 
-            <p className="text-gray-600 text-base md:text-lg">
-              You are at the right place
-            </p>
+            <p className="text-gray-600 text-base md:text-lg">You are at the right place</p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
               <Button className="bg-primary hover:bg-primary/90 text-white px-6 md:px-8 py-3 text-base md:text-lg w-full sm:w-auto">
@@ -28,12 +26,7 @@ export function HeroSection() {
 
               {/* Decorative arrow - hidden on mobile */}
               <div className="hidden xl:block">
-                <svg
-                  width="120"
-                  height="60"
-                  viewBox="0 0 120 60"
-                  className="text-blue-400"
-                >
+                <svg width="120" height="60" viewBox="0 0 120 60" className="text-blue-400">
                   <path
                     d="M10 30 Q 60 10, 110 30"
                     stroke="currentColor"
@@ -41,12 +34,7 @@ export function HeroSection() {
                     fill="none"
                     strokeDasharray="5,5"
                   />
-                  <path
-                    d="M105 25 L110 30 L105 35"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
+                  <path d="M105 25 L110 30 L105 35" stroke="currentColor" strokeWidth="2" fill="none" />
                 </svg>
               </div>
             </div>
@@ -63,16 +51,14 @@ export function HeroSection() {
                 </div>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 text-sm md:text-base">
-                  200+ Students
-                </p>
+                <p className="font-semibold text-gray-800 text-sm md:text-base">200+ Students</p>
               </div>
             </div>
           </div>
 
           <div className="relative mt-8 lg:mt-0">
             <Image
-              src="/assets/hero-sec.jpg"
+              src="/placeholder.svg?height=400&width=500&query=graduation ceremony with students in caps and gowns celebrating"
               alt="Graduation ceremony"
               width={500}
               height={400}
@@ -86,5 +72,5 @@ export function HeroSection() {
       <div className="absolute top-10 md:top-20 right-10 md:right-20 w-16 h-16 md:w-20 md:h-20 bg-blue-200 rounded-full opacity-20"></div>
       <div className="absolute bottom-10 md:bottom-20 left-10 md:left-20 w-12 h-12 md:w-16 md:h-16 bg-purple-200 rounded-full opacity-20"></div>
     </section>
-  );
+  )
 }

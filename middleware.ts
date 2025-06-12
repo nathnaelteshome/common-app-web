@@ -25,6 +25,10 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Add API base URL to headers for backend communication
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set("x-api-base-url", process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001")
+
   // Redirect authenticated admin users away from homepage and public pages
   if (isAuthenticated && userRole === "admin") {
     // Block access to public pages for system admins
@@ -102,7 +106,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
 }
 
 export const config = {

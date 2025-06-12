@@ -1,10 +1,3 @@
-/**
- * Search Service for Universities and Programs
- *
- * This service provides high-level search functionality for the application,
- * managing search indices and providing optimized search operations.
- */
-
 import { SearchIndex, type SearchResult, type SearchOptions } from "./search-algorithm"
 import { type University, type Program, getUniversities } from "@/data/universities-data"
 

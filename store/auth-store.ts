@@ -1,19 +1,19 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { User } from "@/lib/validations/auth";
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import type { User } from "@/lib/validations/auth"
 
 interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  signOut: () => void;
-  clearError: () => void;
-  hasRole: (role: string) => boolean;
-  hasPermission: (permission: string) => boolean;
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+  setUser: (user: User | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  signOut: () => void
+  clearError: () => void
+  hasRole: (role: string) => boolean
+  hasPermission: (permission: string) => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -29,14 +29,12 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: !!user,
           error: null,
-        });
+        })
 
         // Set cookie for middleware when user is set
         if (typeof window !== "undefined" && user) {
-          const token = `mock_token_${user.id}`;
-          document.cookie = `auth_token=${token}; path=/; max-age=${
-            60 * 60 * 24 * 7
-          }`; // 7 days
+          const token = `mock_token_${user.id}`
+          document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
         }
       },
 
@@ -49,25 +47,24 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           error: null,
-        });
+        })
 
         // Remove cookie when signing out
         if (typeof window !== "undefined") {
-          document.cookie =
-            "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
         }
       },
 
       clearError: () => set({ error: null }),
 
       hasRole: (role) => {
-        const { user } = get();
-        return user?.role === role;
+        const { user } = get()
+        return user?.role === role
       },
 
       hasPermission: (permission) => {
-        const { user } = get();
-        if (!user) return false;
+        const { user } = get()
+        if (!user) return false
 
         // Basic permission system based on role
         const rolePermissions = {
@@ -82,13 +79,10 @@ export const useAuthStore = create<AuthState>()(
             "send_notifications",
           ],
           admin: ["*"], // All permissions
-        };
+        }
 
-        const userPermissions =
-          rolePermissions[user.role as keyof typeof rolePermissions] || [];
-        return (
-          userPermissions.includes("*") || userPermissions.includes(permission)
-        );
+        const userPermissions = rolePermissions[user.role as keyof typeof rolePermissions] || []
+        return userPermissions.includes("*") || userPermissions.includes(permission)
       },
     }),
     {
@@ -97,6 +91,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
-);
+    },
+  ),
+)

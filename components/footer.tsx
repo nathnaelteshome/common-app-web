@@ -1,16 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-} from "lucide-react";
-import Image from "next/image";
-import TimeStamp from "./TimeStamps";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -59,8 +50,8 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-2xl font-bold font-sora">CommonApply</h3>
             <p className="text-blue-200 leading-relaxed">
-              Interdum velit laoreet id donec ultrices tincidunt arcu. Tincidunt
-              tortor aliqua mfacilisi cras fermentum odio eu.
+              Interdum velit laoreet id donec ultrices tincidunt arcu. Tincidunt tortor aliqua mfacilisi cras fermentum
+              odio eu.
             </p>
             <div className="flex items-center gap-4">
               <Facebook className="w-5 h-5 cursor-pointer hover:text-blue-300" />
@@ -74,16 +65,10 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Our Services:</h4>
             <ul className="space-y-2 text-blue-200">
-              <li className="hover:text-white cursor-pointer">
-                Student Registration
-              </li>
-              <li className="hover:text-white cursor-pointer">
-                University Registration
-              </li>
+              <li className="hover:text-white cursor-pointer">Student Registration</li>
+              <li className="hover:text-white cursor-pointer">University Registration</li>
               <li className="hover:text-white cursor-pointer">Provide ID</li>
-              <li className="hover:text-white cursor-pointer">
-                Manage Student Information
-              </li>
+              <li className="hover:text-white cursor-pointer">Manage Student Information</li>
               <li className="hover:text-white cursor-pointer">News</li>
             </ul>
           </div>
@@ -91,8 +76,8 @@ export function Footer() {
           {/* Gallery */}
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Gallery</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {/* {[...Array(6)].map((_, i) => (
+            <div className="grid grid-cols-3 gap-2">
+              {[...Array(6)].map((_, i) => (
                 <Image
                   key={i}
                   src={`/placeholder.svg?height=60&width=60&query=university campus photo ${i + 1}`}
@@ -101,35 +86,7 @@ export function Footer() {
                   height={60}
                   className="rounded object-cover"
                 />
-              ))} */}
-              <Image
-                src="/assets/landing-page/teaching1.jpg"
-                width={100}
-                height={100}
-                className="object-cover"
-                alt="gallery"
-              />
-              <Image
-                src="/assets/landing-page/teaching2.jpeg"
-                width={100}
-                height={100}
-                className="object-cover"
-                alt="gallery"
-              />
-              <Image
-                src="/assets/landing-page/teaching3.jpg"
-                width={100}
-                height={100}
-                className="object-cover"
-                alt="gallery"
-              />
-              <Image
-                src="/assets/landing-page/teaching4.avif"
-                width={100}
-                height={100}
-                className="object-cover"
-                alt="gallery"
-              />
+              ))}
             </div>
           </div>
 
@@ -142,9 +99,7 @@ export function Footer() {
                 placeholder="Enter your email:"
                 className="bg-blue-800 border-blue-600 text-white placeholder:text-blue-300"
               />
-              <Button className="w-full bg-primary hover:bg-primary/90">
-                SUBSCRIBE NOW
-              </Button>
+              <Button className="w-full bg-primary hover:bg-primary/90">SUBSCRIBE NOW</Button>
             </div>
           </div>
         </div>
@@ -154,10 +109,10 @@ export function Footer() {
       <div className="border-t border-blue-600 py-6">
         <div className="container mx-auto px-4 text-center text-blue-200">
           <p>
-            &copy; <TimeStamp /> Common Apply. All rights reserved.
+            Copyright © 2024 <span className="text-white font-semibold">CommApply</span> || All Rights Reserved
           </p>
         </div>
       </div>
     </footer>
-  );
+  )
 }

@@ -268,6 +268,72 @@ export const mockSurveyResponses: SurveyResponse[] = [
   },
 ]
 
+// Add the mockAnnouncements export that's missing
+// Add this after the existing mock data declarations
+
+export const mockAnnouncements = [
+  {
+    id: "ann-001",
+    title: "Application Deadline Extended",
+    content:
+      "The application deadline for Addis Ababa University has been extended by two weeks. Take advantage of this opportunity to complete your application.",
+    type: "university",
+    priority: "high",
+    sender: "Addis Ababa University",
+    createdAt: "2024-05-01T09:00:00Z",
+    isRead: false,
+    actionRequired: true,
+  },
+  {
+    id: "ann-002",
+    title: "New Scholarship Opportunity",
+    content:
+      "A new merit-based scholarship is now available for Computer Science students. Check the eligibility criteria and apply before the deadline.",
+    type: "general",
+    priority: "medium",
+    sender: "CommonApply Team",
+    createdAt: "2024-04-28T14:30:00Z",
+    isRead: true,
+    actionRequired: false,
+  },
+  {
+    id: "ann-003",
+    title: "System Maintenance Notice",
+    content:
+      "The system will be undergoing maintenance on Sunday, May 5th, from 2:00 AM to 6:00 AM EAT. Some features may be temporarily unavailable during this time.",
+    type: "system",
+    priority: "low",
+    sender: "System Administrator",
+    createdAt: "2024-04-25T11:15:00Z",
+    isRead: false,
+    actionRequired: false,
+  },
+  {
+    id: "ann-004",
+    title: "Interview Invitation",
+    content:
+      "You have been invited for an interview with Addis Ababa Institute of Technology. Please check your email for details and confirm your attendance.",
+    type: "university",
+    priority: "high",
+    sender: "Addis Ababa Institute of Technology",
+    createdAt: "2024-04-22T16:45:00Z",
+    isRead: false,
+    actionRequired: true,
+  },
+  {
+    id: "ann-005",
+    title: "Profile Completion Reminder",
+    content:
+      "Your profile is only 75% complete. Complete your profile to increase your chances of being matched with suitable universities.",
+    type: "system",
+    priority: "medium",
+    sender: "CommonApply Team",
+    createdAt: "2024-04-20T10:30:00Z",
+    isRead: true,
+    actionRequired: true,
+  },
+]
+
 // Helper functions
 export const getApplicationsByStatus = (status: StudentApplication["status"]) => {
   return mockApplications.filter((app) => app.status === status)

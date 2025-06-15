@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
 
 const config: Config = {
   darkMode: ["class"],
@@ -6,6 +6,7 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -49,10 +50,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        roboto: "Roboto",
-        sora: "Sora",
-        epilogue: "Epilogue",
-        poppins: "Poppins",
+        roboto: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        sora: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        epilogue: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        poppins: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -61,15 +62,7 @@ const config: Config = {
       },
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
-  safelist: [
-    "bg-[#a0c4f2]",
-    "bg-[#Y6FFD6]",
-    "bg-[#FFD6D6]",
-    "bg-[#E9E2FF]",
-    "bg-[#D6FFD6]",
-    "bg-[#F2A700]",
-  ],
-};
-export default config;
+  safelist: ["bg-[#a0c4f2]", "bg-[#Y6FFD6]", "bg-[#FFD6D6]", "bg-[#E9E2FF]", "bg-[#D6FFD6]", "bg-[#F2A700]"],
+}
+export default config

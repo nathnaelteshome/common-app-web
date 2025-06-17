@@ -23,6 +23,7 @@ import {
   MessageSquare,
   Eye,
   Download,
+  PenTool,
 } from "lucide-react"
 import Link from "next/link"
 import { mockAdminApplications, mockAnnouncements } from "@/data/mock-data"
@@ -180,6 +181,12 @@ export default function AdminDashboard() {
                     <Link href="/admin/applications">
                       <Users className="w-6 h-6" />
                       <span className="text-sm">Applications</span>
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>
+                    <Link href="/admin/blog">
+                      <PenTool className="w-6 h-6" />
+                      <span className="text-sm">Blog Management</span>
                     </Link>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col gap-2" asChild>

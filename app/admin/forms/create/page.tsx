@@ -15,7 +15,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Save, Eye, BookIcon as Publish, FileText, Sparkles, Settings } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { ArrowLeft, Save, Eye, BookIcon as Publish, FileText, Sparkles, Zap } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import type { FormTemplate } from "@/data/form-templates"
@@ -24,7 +25,7 @@ import { AdvancedFormDesigner } from "@/components/advanced-form-designer"
 export default function CreateForm() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"template" | "builder">("template")
+  const [activeTab, setActiveTab] = useState<"template" | "builder" | "advanced">("template")
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<FormTemplate | null>(null)
   const [formName, setFormName] = useState("")
@@ -33,13 +34,26 @@ export default function CreateForm() {
   const [formFields, setFormFields] = useState([])
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [formSections, setFormSections] = useState([])
+  const [formSettings, setFormSettings] = useState({
+    allowDuplicates: false,
+    requiresApproval: true,
+    autoSave: true,
+    showProgress: true,
+    enableConditionalLogic: true,
+    enableAutoFilter: false,
+    sendNotifications: true,
+    collectAnalytics: true,
+    deadline: "",
+    maxSubmissions: 0,
+    requirePayment: false,
+    applicationFee: 0,
+  })
   const [formStyling, setFormStyling] = useState({
     primaryColor: "#0a5eb2",
     backgroundColor: "#ffffff",
     fontFamily: "system",
     layout: "single",
   })
-  const [designMode, setDesignMode] = useState<"basic" | "advanced">("basic")
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "university") {
@@ -76,17 +90,41 @@ export default function CreateForm() {
     toast.success("Started with blank form")
   }
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!formName.trim()) {
       toast.error("Please enter a form name")
       return
     }
 
-    // Save form as draft
-    toast.success("Form saved as draft")
+    try {
+      // Simulate API call to save draft
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const formData = {
+        name: formName,
+        description: formDescription,
+        type: formType,
+        fields: formFields,
+        settings: formSettings,
+        styling: formStyling,
+        status: "draft",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      // Save to localStorage for demo
+      const existingForms = JSON.parse(localStorage.getItem("admin-forms") || "[]")
+      const newForm = { ...formData, id: `form_${Date.now()}` }
+      existingForms.push(newForm)
+      localStorage.setItem("admin-forms", JSON.stringify(existingForms))
+
+      toast.success("Form saved as draft")
+    } catch (error) {
+      toast.error("Failed to save form")
+    }
   }
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!formName.trim()) {
       toast.error("Please enter a form name")
       return
@@ -97,9 +135,34 @@ export default function CreateForm() {
       return
     }
 
-    // Publish form
-    toast.success("Form published successfully")
-    router.push("/admin/forms")
+    try {
+      // Simulate API call to publish form
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      const formData = {
+        name: formName,
+        description: formDescription,
+        type: formType,
+        fields: formFields,
+        settings: formSettings,
+        styling: formStyling,
+        status: "published",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+      }
+
+      // Save to localStorage for demo
+      const existingForms = JSON.parse(localStorage.getItem("admin-forms") || "[]")
+      const newForm = { ...formData, id: `form_${Date.now()}` }
+      existingForms.push(newForm)
+      localStorage.setItem("admin-forms", JSON.stringify(existingForms))
+
+      toast.success("Form published successfully")
+      router.push("/admin/forms")
+    } catch (error) {
+      toast.error("Failed to publish form")
+    }
   }
 
   const handlePreview = () => {
@@ -128,7 +191,7 @@ export default function CreateForm() {
               </p>
             </div>
           </div>
-          {activeTab === "builder" && (
+          {(activeTab === "builder" || activeTab === "advanced") && (
             <div className="flex gap-2">
               <Button variant="outline" onClick={handlePreview}>
                 <Eye className="w-4 h-4 mr-2" />
@@ -147,7 +210,7 @@ export default function CreateForm() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "template" | "builder")}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "template" | "builder" | "advanced")}>
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="template" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
@@ -158,8 +221,8 @@ export default function CreateForm() {
               Form Builder
             </TabsTrigger>
             <TabsTrigger value="advanced" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Advanced Designer
+              <Zap className="w-4 h-4" />
+              Advanced Features
             </TabsTrigger>
           </TabsList>
 
@@ -247,6 +310,100 @@ export default function CreateForm() {
                         </Select>
                       </div>
 
+                      {/* Advanced Settings */}
+                      <div className="pt-4 border-t space-y-4">
+                        <h4 className="font-medium">Advanced Settings</h4>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="autoSave">Auto-save drafts</Label>
+                          <Switch
+                            id="autoSave"
+                            checked={formSettings.autoSave}
+                            onCheckedChange={(checked) => setFormSettings((prev) => ({ ...prev, autoSave: checked }))}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="showProgress">Show progress bar</Label>
+                          <Switch
+                            id="showProgress"
+                            checked={formSettings.showProgress}
+                            onCheckedChange={(checked) =>
+                              setFormSettings((prev) => ({ ...prev, showProgress: checked }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="conditionalLogic">Enable conditional logic</Label>
+                          <Switch
+                            id="conditionalLogic"
+                            checked={formSettings.enableConditionalLogic}
+                            onCheckedChange={(checked) =>
+                              setFormSettings((prev) => ({ ...prev, enableConditionalLogic: checked }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="autoFilter">Auto-filter applications</Label>
+                          <Switch
+                            id="autoFilter"
+                            checked={formSettings.enableAutoFilter}
+                            onCheckedChange={(checked) =>
+                              setFormSettings((prev) => ({ ...prev, enableAutoFilter: checked }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="notifications">Send notifications</Label>
+                          <Switch
+                            id="notifications"
+                            checked={formSettings.sendNotifications}
+                            onCheckedChange={(checked) =>
+                              setFormSettings((prev) => ({ ...prev, sendNotifications: checked }))
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="deadline">Application Deadline</Label>
+                          <Input
+                            id="deadline"
+                            type="datetime-local"
+                            value={formSettings.deadline}
+                            onChange={(e) => setFormSettings((prev) => ({ ...prev, deadline: e.target.value }))}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="requirePayment">Require payment</Label>
+                          <Switch
+                            id="requirePayment"
+                            checked={formSettings.requirePayment}
+                            onCheckedChange={(checked) =>
+                              setFormSettings((prev) => ({ ...prev, requirePayment: checked }))
+                            }
+                          />
+                        </div>
+
+                        {formSettings.requirePayment && (
+                          <div>
+                            <Label htmlFor="applicationFee">Application Fee ($)</Label>
+                            <Input
+                              id="applicationFee"
+                              type="number"
+                              min="0"
+                              value={formSettings.applicationFee}
+                              onChange={(e) =>
+                                setFormSettings((prev) => ({ ...prev, applicationFee: Number(e.target.value) }))
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       {selectedTemplate && (
                         <div className="pt-4 border-t">
                           <h4 className="font-medium mb-3">Template Info</h4>
@@ -283,6 +440,7 @@ export default function CreateForm() {
                         isPreviewMode={isPreviewMode}
                         formName={formName}
                         formDescription={formDescription}
+                        enableConditionalLogic={formSettings.enableConditionalLogic}
                       />
                     </CardContent>
                   </Card>
@@ -290,6 +448,7 @@ export default function CreateForm() {
               </div>
             )}
           </TabsContent>
+
           <TabsContent value="advanced" className="space-y-6">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -316,6 +475,8 @@ export default function CreateForm() {
               formDescription={formDescription}
               formStyling={formStyling}
               onFormStylingChange={setFormStyling}
+              formSettings={formSettings}
+              onFormSettingsChange={setFormSettings}
             />
           </TabsContent>
         </Tabs>

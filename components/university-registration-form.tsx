@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -7,12 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Eye, EyeOff, Upload } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Upload, CheckCircle } from "lucide-react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { universityRegistrationSchema, type UniversityRegistrationData } from "@/lib/validations/auth"
-import { authService } from "@/lib/auth-service"
 import { useAuthStore } from "@/store/auth-store"
+import { verificationService } from "@/lib/services/verification-service"
+import { toast } from "sonner"
 
 interface UniversityRegistrationFormProps {
   onBack: () => void
@@ -21,6 +24,8 @@ interface UniversityRegistrationFormProps {
 export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [documents, setDocuments] = useState<File[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const { setLoading, setError } = useAuthStore()
 
@@ -28,7 +33,7 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<UniversityRegistrationData>({
     resolver: zodResolver(universityRegistrationSchema),
     defaultValues: {
@@ -36,22 +41,45 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
     },
   })
 
+  const handleDocumentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    setDocuments((prev) => [...prev, ...files])
+  }
+
+  const removeDocument = (index: number) => {
+    setDocuments((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const onSubmit = async (data: UniversityRegistrationData) => {
     try {
+      setIsSubmitting(true)
       setLoading(true)
       setError(null)
 
-      // Submit registration
-      await authService.signUp(data)
+      // Generate unique ID for the university
+      const universityId = `uni-${Date.now()}`
 
-      // Submit verification request (in real app, this would be part of registration)
-      // For now, we'll simulate this step
+      // Prepare university data with ID
+      const universityData = {
+        ...data,
+        id: universityId,
+      }
 
-      // Redirect to verification status page instead of email verification
-      router.push(`/admin/verification/status`)
+      // Submit verification request with documents
+      const verificationRequestId = await verificationService.submitVerificationRequest(universityData, documents)
+
+      toast.success("Registration submitted successfully!")
+
+      // Show success message and redirect to verification status
+      setTimeout(() => {
+        router.push(`/admin/verification/status?requestId=${verificationRequestId}`)
+      }, 2000)
     } catch (error) {
+      console.error("Registration error:", error)
       setError(error instanceof Error ? error.message : "Registration failed")
+      toast.error("Registration failed. Please try again.")
     } finally {
+      setIsSubmitting(false)
       setLoading(false)
     }
   }
@@ -67,28 +95,32 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
 
       <Card>
         <CardHeader className="bg-gray-100">
-          <CardTitle className="text-2xl text-primary">COLLEGE REGISTRATION</CardTitle>
+          <CardTitle className="text-2xl text-primary">UNIVERSITY REGISTRATION</CardTitle>
           <div className="mt-4">
-            <h3 className="font-semibold text-gray-800 mb-2">Fields With Are Required</h3>
-            <p className="text-sm text-gray-600">
-              Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit, Sed Do Eiusmod Tempor Incididunt Ut Labore Et
-              Dolore Magna Aliqua. Ut Enim Ad Minim
-            </p>
+            <h3 className="font-semibold text-gray-800 mb-2">Registration & Verification Process</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>• Complete the registration form with accurate information</p>
+              <p>• Upload required verification documents</p>
+              <p>• Your application will be reviewed by our team within 2-3 business days</p>
+              <p>• You'll receive email notifications about your verification status</p>
+              <p>• Once approved, you'll gain access to the admin dashboard</p>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Credentials Section */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Credentials</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Account Credentials</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
                     {...register("email")}
                     className={errors.email ? "border-red-500" : ""}
+                    placeholder="admin@university.edu"
                   />
                   {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
                 </div>
@@ -141,43 +173,40 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
               </div>
             </div>
 
-            {/* College Information Section */}
+            {/* University Information Section */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">College Information</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">University Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <Label htmlFor="collegeName">College Name *</Label>
+                  <Label htmlFor="collegeName">University/College Name *</Label>
                   <Input
                     id="collegeName"
                     {...register("collegeName")}
                     className={errors.collegeName ? "border-red-500" : ""}
+                    placeholder="Enter full university name"
                   />
                   {errors.collegeName && <p className="text-red-500 text-sm mt-1">{errors.collegeName.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="address1">Address 1 *</Label>
-                  <Controller
-                    name="address1"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className={errors.address1 ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="address1">Address Option 1</SelectItem>
-                          <SelectItem value="address2">Address Option 2</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
+                  <Label htmlFor="address1">Address Line 1 *</Label>
+                  <Input
+                    id="address1"
+                    {...register("address1")}
+                    className={errors.address1 ? "border-red-500" : ""}
+                    placeholder="Street address"
                   />
                   {errors.address1 && <p className="text-red-500 text-sm mt-1">{errors.address1.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="address2">Address 2 *</Label>
-                  <Input id="address2" {...register("address2")} className={errors.address2 ? "border-red-500" : ""} />
+                  <Label htmlFor="address2">Address Line 2</Label>
+                  <Input
+                    id="address2"
+                    {...register("address2")}
+                    className={errors.address2 ? "border-red-500" : ""}
+                    placeholder="Apartment, suite, etc. (optional)"
+                  />
                   {errors.address2 && <p className="text-red-500 text-sm mt-1">{errors.address2.message}</p>}
                 </div>
 
@@ -189,12 +218,14 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger className={errors.country ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Bangladesh" />
+                          <SelectValue placeholder="Select country" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="bangladesh">Bangladesh</SelectItem>
                           <SelectItem value="ethiopia">Ethiopia</SelectItem>
                           <SelectItem value="kenya">Kenya</SelectItem>
+                          <SelectItem value="uganda">Uganda</SelectItem>
+                          <SelectItem value="tanzania">Tanzania</SelectItem>
+                          <SelectItem value="rwanda">Rwanda</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -204,74 +235,67 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
 
                 <div>
                   <Label htmlFor="city">City *</Label>
-                  <Input id="city" {...register("city")} className={errors.city ? "border-red-500" : ""} />
+                  <Input
+                    id="city"
+                    {...register("city")}
+                    className={errors.city ? "border-red-500" : ""}
+                    placeholder="City name"
+                  />
                   {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="postcode">Postcode / ZIP (Optional)</Label>
-                  <Input id="postcode" {...register("postcode")} className={errors.postcode ? "border-red-500" : ""} />
+                  <Label htmlFor="postcode">Postal Code *</Label>
+                  <Input
+                    id="postcode"
+                    {...register("postcode")}
+                    className={errors.postcode ? "border-red-500" : ""}
+                    placeholder="Postal/ZIP code"
+                  />
                   {errors.postcode && <p className="text-red-500 text-sm mt-1">{errors.postcode.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="phone1">Phone *</Label>
+                  <Label htmlFor="phone1">Primary Phone *</Label>
                   <Input
                     id="phone1"
                     {...register("phone1")}
-                    placeholder="+1234567890"
+                    placeholder="+251911234567"
                     className={errors.phone1 ? "border-red-500" : ""}
                   />
                   {errors.phone1 && <p className="text-red-500 text-sm mt-1">{errors.phone1.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="phone2">Phone 2 *</Label>
+                  <Label htmlFor="phone2">Secondary Phone</Label>
                   <Input
                     id="phone2"
                     {...register("phone2")}
-                    placeholder="+1234567890"
+                    placeholder="+251911234567 (optional)"
                     className={errors.phone2 ? "border-red-500" : ""}
                   />
                   {errors.phone2 && <p className="text-red-500 text-sm mt-1">{errors.phone2.message}</p>}
                 </div>
 
                 <div>
-                  <Label htmlFor="documents">Document *</Label>
-                  <Controller
-                    name="documents"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className={errors.documents ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="license">Business License</SelectItem>
-                          <SelectItem value="accreditation">Accreditation Certificate</SelectItem>
-                          <SelectItem value="registration">Registration Document</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.documents && <p className="text-red-500 text-sm mt-1">{errors.documents.message}</p>}
-                </div>
-
-                <div>
-                  <Label htmlFor="fieldOfStudies">Field Of Studies*</Label>
+                  <Label htmlFor="fieldOfStudies">Primary Field of Studies *</Label>
                   <Controller
                     name="fieldOfStudies"
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger className={errors.fieldOfStudies ? "border-red-500" : ""}>
-                          <SelectValue placeholder="Select an option" />
+                          <SelectValue placeholder="Select primary field" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="engineering">Engineering</SelectItem>
-                          <SelectItem value="medicine">Medicine</SelectItem>
-                          <SelectItem value="business">Business</SelectItem>
+                          <SelectItem value="engineering">Engineering & Technology</SelectItem>
+                          <SelectItem value="medicine">Medicine & Health Sciences</SelectItem>
+                          <SelectItem value="business">Business & Economics</SelectItem>
                           <SelectItem value="arts">Arts & Humanities</SelectItem>
+                          <SelectItem value="science">Natural Sciences</SelectItem>
+                          <SelectItem value="social">Social Sciences</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                          <SelectItem value="law">Law</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -282,43 +306,95 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
                 </div>
 
                 <div>
-                  <Label htmlFor="campusImage">Campus Image *</Label>
+                  <Label htmlFor="documents">Institution Type *</Label>
                   <Controller
-                    name="campusImage"
+                    name="documents"
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an option" />
+                        <SelectTrigger className={errors.documents ? "border-red-500" : ""}>
+                          <SelectValue placeholder="Select institution type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="upload">Upload Image</SelectItem>
-                          <SelectItem value="url">Image URL</SelectItem>
+                          <SelectItem value="public_university">Public University</SelectItem>
+                          <SelectItem value="private_university">Private University</SelectItem>
+                          <SelectItem value="college">College</SelectItem>
+                          <SelectItem value="institute">Institute</SelectItem>
+                          <SelectItem value="technical_school">Technical School</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
                   />
-                </div>
-
-                <div className="md:col-span-2">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">Choose File</p>
-                    <p className="text-xs text-gray-400">No File Chosen</p>
-                  </div>
+                  {errors.documents && <p className="text-red-500 text-sm mt-1">{errors.documents.message}</p>}
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-800 mb-2">Fields With Are Required</h3>
-              <p className="text-sm text-gray-600">
-                Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit, Sed Do Eiusmod Tempor Incididunt Ut Labore Et
-                Dolore Magna Aliqua. Ut Enim Ad Minim Veniam, Quis Nostrud Exercitation Ullamco Laboris Nisi Ut Aliquip
-                Ex Ea Commodo Consequat. Duis Aute Irure Dolor In Reprehenderit In Voluptate Velit Esse Cillum Dolore Eu
-                Fugiat Nulla Pariatur. Excepteur Sint Occaecat Cupidatat Non Proident, Sunt In Culpa Qui Officia
-                Deserunt Mollit Anim Id Est Laborum.
-              </p>
+            {/* Document Upload Section */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Verification Documents</h3>
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <div className="text-center">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-600 mb-2">Upload verification documents</p>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Required: Business License, Accreditation Certificate, Tax Certificate
+                    </p>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={handleDocumentUpload}
+                      className="hidden"
+                      id="document-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById("document-upload")?.click()}
+                    >
+                      Choose Files
+                    </Button>
+                  </div>
+                </div>
+
+                {documents.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-700">Uploaded Documents:</h4>
+                    {documents.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span className="text-sm font-medium">{file.name}</span>
+                          <span className="text-xs text-gray-500">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeDocument(index)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Information Notice */}
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-2">What happens after registration?</h3>
+              <div className="text-sm text-blue-700 space-y-2">
+                <p>• Your registration will be submitted for verification</p>
+                <p>• Our team will review your documents within 2-3 business days</p>
+                <p>• You'll receive email notifications about your verification status</p>
+                <p>• Once approved, you'll gain access to the admin dashboard</p>
+                <p>• You can track your verification status at any time</p>
+              </div>
             </div>
 
             <Button
@@ -326,20 +402,11 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
               disabled={isSubmitting}
               className="w-full bg-primary hover:bg-primary/90 text-white py-3 text-lg"
             >
-              {isSubmitting ? "Creating Account..." : "CREATE ACCOUNT"}
+              {isSubmitting ? "Submitting Registration..." : "SUBMIT REGISTRATION"}
             </Button>
           </form>
         </CardContent>
       </Card>
-      <div className="bg-blue-50 p-6 rounded-lg">
-        <h3 className="font-semibold text-blue-800 mb-2">What happens next?</h3>
-        <div className="text-sm text-blue-700 space-y-2">
-          <p>• Your registration will be submitted for verification</p>
-          <p>• Our team will review your documents within 2-3 business days</p>
-          <p>• You'll receive email notifications about your verification status</p>
-          <p>• Once approved, you'll gain access to the admin dashboard</p>
-        </div>
-      </div>
     </div>
   )
 }

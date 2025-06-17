@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import {
   FileText,
   Search,
@@ -25,9 +28,22 @@ import {
   User,
   Calendar,
   DollarSign,
+  Bell,
+  Send,
+  Zap,
 } from "lucide-react"
 import Link from "next/link"
-import { mockAdminApplications } from "@/data/mock-admin-data"
+import { mockAdminApplications, getApplicationStatistics } from "@/data/mock-admin-applications"
+import { toast } from "sonner"
+
+interface ApplicationAction {
+  id: string
+  type: "accept" | "reject" | "waitlist"
+  reason?: string
+  notes?: string
+  sendNotification: boolean
+  customMessage?: string
+}
 
 export default function AdminApplications() {
   const { user, isAuthenticated } = useAuthStore()
@@ -36,6 +52,24 @@ export default function AdminApplications() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
   const [sortBy, setSortBy] = useState("submittedAt")
+  const [applications, setApplications] = useState(mockAdminApplications)
+  const [selectedApplication, setSelectedApplication] = useState<string | null>(null)
+  const [actionDialog, setActionDialog] = useState<{
+    open: boolean
+    type: "accept" | "reject" | "waitlist" | null
+    applicationId: string | null
+  }>({ open: false, type: null, applicationId: null })
+  const [actionData, setActionData] = useState<ApplicationAction>({
+    id: "",
+    type: "accept",
+    sendNotification: true,
+    reason: "",
+    notes: "",
+    customMessage: "",
+  })
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedApplications, setSelectedApplications] = useState<Set<string>>(new Set())
+  const [autoFilterEnabled, setAutoFilterEnabled] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "university") {
@@ -47,7 +81,7 @@ export default function AdminApplications() {
     return null
   }
 
-  const filteredApplications = mockAdminApplications.filter((app) => {
+  const filteredApplications = applications.filter((app) => {
     const matchesSearch =
       app.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.studentEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,6 +106,116 @@ export default function AdminApplications() {
         return 0
     }
   })
+
+  const handleApplicationAction = async (applicationId: string, action: "accept" | "reject" | "waitlist") => {
+    setActionDialog({ open: true, type: action, applicationId })
+    setActionData({
+      id: applicationId,
+      type: action,
+      sendNotification: true,
+      reason: "",
+      notes: "",
+      customMessage: getDefaultMessage(action),
+    })
+  }
+
+  const getDefaultMessage = (action: "accept" | "reject" | "waitlist"): string => {
+    switch (action) {
+      case "accept":
+        return "Congratulations! Your application has been accepted. We look forward to welcoming you to our university."
+      case "reject":
+        return "Thank you for your interest in our university. Unfortunately, we are unable to offer you admission at this time."
+      case "waitlist":
+        return "Your application is currently on our waitlist. We will notify you if a spot becomes available."
+      default:
+        return ""
+    }
+  }
+
+  const executeApplicationAction = async () => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      // Update application status
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === actionData.id
+            ? {
+                ...app,
+                status:
+                  actionData.type === "accept" ? "accepted" : actionData.type === "reject" ? "rejected" : "waitlisted",
+              }
+            : app,
+        ),
+      )
+
+      // Send notification if enabled
+      if (actionData.sendNotification) {
+        // Simulate sending notification
+        toast.success(`Notification sent to student`)
+      }
+
+      toast.success(`Application ${actionData.type}ed successfully`)
+      setActionDialog({ open: false, type: null, applicationId: null })
+    } catch (error) {
+      toast.error("Failed to process application")
+    }
+  }
+
+  const handleBulkAction = async (action: "accept" | "reject" | "waitlist") => {
+    if (selectedApplications.size === 0) {
+      toast.error("Please select applications to process")
+      return
+    }
+
+    try {
+      // Simulate bulk processing
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          selectedApplications.has(app.id)
+            ? { ...app, status: action === "accept" ? "accepted" : action === "reject" ? "rejected" : "waitlisted" }
+            : app,
+        ),
+      )
+
+      toast.success(`${selectedApplications.size} applications ${action}ed successfully`)
+      setSelectedApplications(new Set())
+      setBulkMode(false)
+    } catch (error) {
+      toast.error("Failed to process applications")
+    }
+  }
+
+  const runAutoFilter = async () => {
+    try {
+      setAutoFilterEnabled(true)
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Simulate auto-filtering based on eligibility criteria
+      const autoFilteredApplications = applications.map((app) => {
+        if (app.status === "submitted") {
+          if (app.eligibilityScore >= 90) {
+            return { ...app, status: "accepted" as const, tags: [...app.tags, "auto-accepted"] }
+          } else if (app.eligibilityScore < 70) {
+            return { ...app, status: "rejected" as const, tags: [...app.tags, "auto-rejected"] }
+          } else {
+            return { ...app, status: "under-review" as const, tags: [...app.tags, "auto-review"] }
+          }
+        }
+        return app
+      })
+
+      setApplications(autoFilteredApplications)
+      toast.success("Auto-filtering completed successfully")
+    } catch (error) {
+      toast.error("Auto-filtering failed")
+    } finally {
+      setAutoFilterEnabled(false)
+    }
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -118,14 +262,7 @@ export default function AdminApplications() {
     }
   }
 
-  const statusCounts = {
-    all: mockAdminApplications.length,
-    submitted: mockAdminApplications.filter((app) => app.status === "submitted").length,
-    "under-review": mockAdminApplications.filter((app) => app.status === "under-review").length,
-    accepted: mockAdminApplications.filter((app) => app.status === "accepted").length,
-    rejected: mockAdminApplications.filter((app) => app.status === "rejected").length,
-    waitlisted: mockAdminApplications.filter((app) => app.status === "waitlisted").length,
-  }
+  const statusCounts = getApplicationStatistics()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -136,23 +273,92 @@ export default function AdminApplications() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Application Management</h1>
-            <p className="text-gray-600">Review and manage student applications</p>
+            <p className="text-gray-600">Review and manage student applications with automated tools</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0">
+            <Button variant="outline" onClick={() => setBulkMode(!bulkMode)} className={bulkMode ? "bg-blue-100" : ""}>
+              {bulkMode ? "Exit Bulk Mode" : "Bulk Actions"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={runAutoFilter}
+              disabled={autoFilterEnabled}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600"
+            >
+              {autoFilterEnabled ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Auto-Filtering...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Auto Filter
+                </>
+              )}
+            </Button>
             <Button variant="outline" asChild>
               <Link href="/admin/applications/export">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Link>
             </Button>
-            <Button className="bg-[#0a5eb2] hover:bg-[#0a5eb2]/90" asChild>
-              <Link href="/admin/eligibility">
-                <Filter className="w-4 h-4 mr-2" />
-                Auto Filter
-              </Link>
-            </Button>
           </div>
         </div>
+
+        {/* Bulk Actions Bar */}
+        {bulkMode && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium">
+                    {selectedApplications.size} application{selectedApplications.size !== 1 ? "s" : ""} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const allIds = new Set(sortedApplications.map((app) => app.id))
+                      setSelectedApplications(allIds)
+                    }}
+                  >
+                    Select All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setSelectedApplications(new Set())}>
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkAction("accept")}
+                    disabled={selectedApplications.size === 0}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Accept Selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkAction("waitlist")}
+                    disabled={selectedApplications.size === 0}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Waitlist Selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkAction("reject")}
+                    disabled={selectedApplications.size === 0}
+                    variant="destructive"
+                  >
+                    Reject Selected
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters and Search */}
         <Card className="mb-6">
@@ -173,9 +379,9 @@ export default function AdminApplications() {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status ({statusCounts.all})</SelectItem>
+                  <SelectItem value="all">All Status ({statusCounts.total})</SelectItem>
                   <SelectItem value="submitted">Submitted ({statusCounts.submitted})</SelectItem>
-                  <SelectItem value="under-review">Under Review ({statusCounts["under-review"]})</SelectItem>
+                  <SelectItem value="under-review">Under Review ({statusCounts.underReview})</SelectItem>
                   <SelectItem value="accepted">Accepted ({statusCounts.accepted})</SelectItem>
                   <SelectItem value="rejected">Rejected ({statusCounts.rejected})</SelectItem>
                   <SelectItem value="waitlisted">Waitlisted ({statusCounts.waitlisted})</SelectItem>
@@ -218,6 +424,22 @@ export default function AdminApplications() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
+                    {bulkMode && (
+                      <input
+                        type="checkbox"
+                        checked={selectedApplications.has(application.id)}
+                        onChange={(e) => {
+                          const newSelected = new Set(selectedApplications)
+                          if (e.target.checked) {
+                            newSelected.add(application.id)
+                          } else {
+                            newSelected.delete(application.id)
+                          }
+                          setSelectedApplications(newSelected)
+                        }}
+                        className="mt-1"
+                      />
+                    )}
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                       <User className="w-6 h-6 text-gray-600" />
                     </div>
@@ -296,11 +518,27 @@ export default function AdminApplications() {
                         </Button>
                         {application.status === "submitted" && (
                           <>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              onClick={() => handleApplicationAction(application.id, "accept")}
+                            >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Accept
                             </Button>
-                            <Button size="sm" variant="destructive">
+                            <Button
+                              size="sm"
+                              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                              onClick={() => handleApplicationAction(application.id, "waitlist")}
+                            >
+                              <AlertTriangle className="w-4 h-4 mr-1" />
+                              Waitlist
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleApplicationAction(application.id, "reject")}
+                            >
                               <XCircle className="w-4 h-4 mr-1" />
                               Reject
                             </Button>
@@ -329,6 +567,120 @@ export default function AdminApplications() {
             </CardContent>
           </Card>
         )}
+
+        {/* Action Dialog */}
+        <Dialog open={actionDialog.open} onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {actionDialog.type === "accept" && <CheckCircle className="w-5 h-5 text-green-600" />}
+                {actionDialog.type === "reject" && <XCircle className="w-5 h-5 text-red-600" />}
+                {actionDialog.type === "waitlist" && <AlertTriangle className="w-5 h-5 text-yellow-600" />}
+                {actionDialog.type === "accept" && "Accept Application"}
+                {actionDialog.type === "reject" && "Reject Application"}
+                {actionDialog.type === "waitlist" && "Waitlist Application"}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reason">Reason (Optional)</Label>
+                <Select
+                  value={actionData.reason}
+                  onValueChange={(value) => setActionData((prev) => ({ ...prev, reason: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {actionDialog.type === "accept" && (
+                      <>
+                        <SelectItem value="excellent_qualifications">Excellent Qualifications</SelectItem>
+                        <SelectItem value="meets_requirements">Meets All Requirements</SelectItem>
+                        <SelectItem value="strong_application">Strong Application</SelectItem>
+                      </>
+                    )}
+                    {actionDialog.type === "reject" && (
+                      <>
+                        <SelectItem value="insufficient_grades">Insufficient Grades</SelectItem>
+                        <SelectItem value="missing_requirements">Missing Requirements</SelectItem>
+                        <SelectItem value="program_full">Program Full</SelectItem>
+                        <SelectItem value="incomplete_application">Incomplete Application</SelectItem>
+                      </>
+                    )}
+                    {actionDialog.type === "waitlist" && (
+                      <>
+                        <SelectItem value="competitive_pool">Competitive Applicant Pool</SelectItem>
+                        <SelectItem value="limited_spots">Limited Available Spots</SelectItem>
+                        <SelectItem value="pending_review">Pending Further Review</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="notes">Internal Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  value={actionData.notes}
+                  onChange={(e) => setActionData((prev) => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Add internal notes for your records..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="sendNotification"
+                  checked={actionData.sendNotification}
+                  onChange={(e) => setActionData((prev) => ({ ...prev, sendNotification: e.target.checked }))}
+                />
+                <Label htmlFor="sendNotification" className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Send notification to student
+                </Label>
+              </div>
+
+              {actionData.sendNotification && (
+                <div>
+                  <Label htmlFor="customMessage">Custom Message</Label>
+                  <Textarea
+                    id="customMessage"
+                    value={actionData.customMessage}
+                    onChange={(e) => setActionData((prev) => ({ ...prev, customMessage: e.target.value }))}
+                    placeholder="Customize the message sent to the student..."
+                    rows={4}
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setActionDialog({ open: false, type: null, applicationId: null })}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={executeApplicationAction}
+                  className={
+                    actionDialog.type === "accept"
+                      ? "bg-green-600 hover:bg-green-700"
+                      : actionDialog.type === "reject"
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-yellow-600 hover:bg-yellow-700"
+                  }
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Confirm{" "}
+                  {actionDialog.type === "accept" ? "Accept" : actionDialog.type === "reject" ? "Reject" : "Waitlist"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Footer />

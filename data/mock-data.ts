@@ -1,3 +1,9 @@
+// ============================================================================
+// MOCK DATA - FRONTEND ONLY
+// ============================================================================
+// This file contains all mock data for the frontend application
+// In a real application, this data would come from API endpoints
+
 import type { User, StudentProfile, UniversityProfile } from "@/lib/validations/auth"
 
 // ============================================================================

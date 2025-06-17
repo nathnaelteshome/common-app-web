@@ -50,58 +50,60 @@ export function Header() {
   }
 
   return (
-    <header className="w-full">
+    <header className="w-full relative z-50">
       {/* Top Bar - Only show for students and non-authenticated users */}
       {(!isAuthenticated || user?.role === "student") && <TopBar />}
 
       {/* Main Navigation */}
-      <div className="bg-white shadow-sm py-4 px-4">
-        <div className="container mx-auto flex items-center justify-between">
-          {/* Brand/Logo */}
-          <BrandLogo isAuthenticated={isAuthenticated} userRole={user?.role} />
+      <div className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Brand/Logo */}
+            <BrandLogo isAuthenticated={isAuthenticated} userRole={user?.role} />
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            <NavigationLinks isAuthenticated={isAuthenticated} userRole={user?.role} isActiveLink={isActiveLink} />
-          </nav>
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-8">
+              <NavigationLinks isAuthenticated={isAuthenticated} userRole={user?.role} isActiveLink={isActiveLink} />
+            </nav>
 
-          {/* Desktop Action Icons */}
-          <UserActions
-            isAuthenticated={isAuthenticated}
-            userRole={user?.role}
-            unreadMessages={unreadMessages}
-            unreadNotifications={unreadNotifications}
-            onSignOut={handleSignOut}
-            userProfile={user?.profile}
-            email={user?.email}
-          />
+            {/* Desktop Action Icons */}
+            <UserActions
+              isAuthenticated={isAuthenticated}
+              userRole={user?.role}
+              unreadMessages={unreadMessages}
+              unreadNotifications={unreadNotifications}
+              onSignOut={handleSignOut}
+              userProfile={user?.profile}
+              email={user?.email}
+            />
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden text-[#0a5eb2]"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </Button>
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden text-primary hover:bg-primary/10 rounded-xl transition-colors duration-300"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </Button>
+          </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <MobileMenu
+              isAuthenticated={isAuthenticated}
+              userRole={user?.role}
+              isActiveLink={isActiveLink}
+              onLinkClick={() => setIsMobileMenuOpen(false)}
+              unreadMessages={unreadMessages}
+              unreadNotifications={unreadNotifications}
+              onSignOut={handleSignOut}
+              userProfile={user?.profile}
+              email={user?.email}
+            />
+          )}
         </div>
-
-        {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <MobileMenu
-            isAuthenticated={isAuthenticated}
-            userRole={user?.role}
-            isActiveLink={isActiveLink}
-            onLinkClick={() => setIsMobileMenuOpen(false)}
-            unreadMessages={unreadMessages}
-            unreadNotifications={unreadNotifications}
-            onSignOut={handleSignOut}
-            userProfile={user?.profile}
-            email={user?.email}
-          />
-        )}
       </div>
     </header>
   )

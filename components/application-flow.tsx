@@ -189,23 +189,41 @@ export function ApplicationFlow({ university: initialUniversity, programId: init
             />
           )}
 
-          {currentStep === "program-selection" && (
+          {currentStep === "program-selection" && applicationData.university && (
             <ProgramSelection
-              university={applicationData.university!}
+              university={applicationData.university}
               selectedProgramId={applicationData.programId}
               onComplete={(programId) => handleStepComplete("application-form", { programId })}
               onBack={() => setCurrentStep("university-selection")}
             />
           )}
 
-          {currentStep === "application-form" && (
+          {currentStep === "program-selection" && !applicationData.university && (
+            <Card className="text-center">
+              <CardContent className="p-8">
+                <p className="text-gray-600 mb-4">Please select a university first.</p>
+                <Button onClick={() => setCurrentStep("university-selection")}>Select University</Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === "application-form" && applicationData.university && applicationData.programId && (
             <ApplicationForm
-              university={applicationData.university!}
-              programId={applicationData.programId!}
+              university={applicationData.university}
+              programId={applicationData.programId}
               initialData={applicationData.formData}
               onComplete={(formData) => handleStepComplete("payment", { formData })}
               onBack={() => setCurrentStep("program-selection")}
             />
+          )}
+
+          {currentStep === "application-form" && (!applicationData.university || !applicationData.programId) && (
+            <Card className="text-center">
+              <CardContent className="p-8">
+                <p className="text-gray-600 mb-4">Missing university or program information.</p>
+                <Button onClick={() => setCurrentStep("university-selection")}>Start Over</Button>
+              </CardContent>
+            </Card>
           )}
 
           {currentStep === "payment" && (

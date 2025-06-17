@@ -52,6 +52,7 @@ import {
 import Link from "next/link"
 import { mockVerificationRequests } from "@/data/mock-verification-data"
 import { toast } from "sonner"
+import { verificationService } from "@/lib/services/verification-service"
 
 export default function VerificationManagement() {
   const { user, isAuthenticated } = useAuthStore()
@@ -62,6 +63,7 @@ export default function VerificationManagement() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
   const [reviewNotes, setReviewNotes] = useState("")
   const [rejectionReason, setRejectionReason] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "admin") {
@@ -145,24 +147,50 @@ export default function VerificationManagement() {
 
   const handleApprove = async (requestId: string) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsSubmitting(true)
+
+      const decision = {
+        decision: "approve" as const,
+        notes: "University verification approved. All documents and information have been verified.",
+        conditions: [],
+      }
+
+      await verificationService.updateVerificationStatus(requestId, decision, "system-admin-1")
+
       toast.success("University verification approved successfully")
-      // In real app, refetch data
+
+      // Refresh the data
+      window.location.reload()
     } catch (error) {
       toast.error("Failed to approve verification")
+      console.error("Approval error:", error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleReject = async (requestId: string, reason: string) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsSubmitting(true)
+
+      const decision = {
+        decision: "reject" as const,
+        notes: reason,
+        conditions: [],
+      }
+
+      await verificationService.updateVerificationStatus(requestId, decision, "system-admin-1")
+
       toast.success("University verification rejected")
       setRejectionReason("")
-      // In real app, refetch data
+
+      // Refresh the data
+      window.location.reload()
     } catch (error) {
       toast.error("Failed to reject verification")
+      console.error("Rejection error:", error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

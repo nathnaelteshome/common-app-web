@@ -26,8 +26,6 @@ export function ApplicationForm({ university, programId, initialData, onComplete
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({})
   const [isAutoSaving, setIsAutoSaving] = useState(false)
 
-  const program = university.programs.find((p) => p.id === programId)
-
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationFormSchema),
     defaultValues: {
@@ -72,6 +70,51 @@ export function ApplicationForm({ university, programId, initialData, onComplete
     },
   })
 
+  // Add null checks
+  if (!university) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-gray-600">University information not available. Please go back and select a university.</p>
+          <Button onClick={onBack} className="mt-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Selection
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!programId) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-gray-600">Program information not available. Please go back and select a program.</p>
+          <Button onClick={onBack} className="mt-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Selection
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const program = university?.programs?.find((p) => p.id === programId)
+
+  if (!program) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-gray-600">Selected program not found. Please go back and select a valid program.</p>
+          <Button onClick={onBack} className="mt-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Selection
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const sections = [
     {
       id: "personal",
@@ -111,7 +154,7 @@ export function ApplicationForm({ university, programId, initialData, onComplete
       setIsAutoSaving(true)
       const timer = setTimeout(() => {
         // Simulate auto-save
-        localStorage.setItem(`application-draft-${university.id}-${programId}`, JSON.stringify(form.getValues()))
+        localStorage.setItem(`application-draft-${university?.id}-${programId}`, JSON.stringify(form.getValues()))
         setIsAutoSaving(false)
       }, 1000)
 
@@ -119,7 +162,7 @@ export function ApplicationForm({ university, programId, initialData, onComplete
     })
 
     return () => subscription.unsubscribe()
-  }, [form, university.id, programId])
+  }, [form, university?.id, programId])
 
   const handleFileUpload = (fieldName: string, file: File) => {
     setUploadedFiles((prev) => ({ ...prev, [fieldName]: file }))
@@ -170,7 +213,7 @@ export function ApplicationForm({ university, programId, initialData, onComplete
           <div className="flex-1">
             <CardTitle>Application Form</CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              {program?.name} at {university.name}
+              {program?.name} at {university?.name}
             </p>
           </div>
           {isAutoSaving && (
@@ -431,7 +474,7 @@ export function ApplicationForm({ university, programId, initialData, onComplete
               <h3 className="text-lg font-semibold">Essays</h3>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="whyThisUniversity">Why do you want to study at {university.name}? *</Label>
+                  <Label htmlFor="whyThisUniversity">Why do you want to study at {university?.name}? *</Label>
                   <Textarea
                     id="whyThisUniversity"
                     rows={4}

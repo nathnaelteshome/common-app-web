@@ -2,55 +2,62 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Star, MapPin, Users, BookOpen, ArrowRight } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 const colleges = [
   {
     name: "ADDIS ABABA INSTITUTE OF TECHNOLOGY UNIVERSITY",
-    location: "Mekelle",
+    location: "Addis Ababa",
     rating: 5.0,
     fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=modern university building with glass facade",
+    students: "25,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "addis-ababa-institute-technology",
   },
   {
     name: "MEKELLE UNIVERSITY",
     location: "Mekelle",
     rating: 4.5,
-    fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=university entrance gate with arch",
+    fields: 180,
+    students: "32,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "mekelle-university",
   },
   {
     name: "GONDER UNIVERSITY",
     location: "Gonder",
     rating: 4.5,
-    fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=historic university building with stone architecture",
+    fields: 150,
+    students: "28,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "gonder-university",
   },
   {
     name: "JIMMA UNIVERSITY",
     location: "Jimma",
     rating: 4.5,
-    fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=green university campus with mountains",
+    fields: 170,
+    students: "30,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "jimma-university",
   },
   {
     name: "BAHIRDAR UNIVERSITY",
     location: "Bahirdar",
     rating: 4.5,
-    fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=modern university building with red brick",
+    fields: 160,
+    students: "26,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "bahirdar-university",
   },
   {
     name: "AKSUM UNIVERSITY",
     location: "Aksum",
     rating: 4.5,
-    fields: 200,
-    students: "20,000+",
-    image: "/placeholder.svg?height=200&width=300&query=ancient university building with traditional architecture",
+    fields: 120,
+    students: "18,000+",
+    image: "/placeholder.svg?height=200&width=300",
+    slug: "aksum-university",
   },
 ]
 
@@ -71,9 +78,11 @@ export function CollegesSection() {
               You Can Apply With Us.
             </h2>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 text-white hidden lg:flex">
-            See More
-            <ArrowRight className="ml-2 w-4 h-4" />
+          <Button className="bg-primary hover:bg-primary/90 text-white hidden lg:flex" asChild>
+            <Link href="/colleges">
+              See More
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
           </Button>
         </div>
 
@@ -135,9 +144,11 @@ export function CollegesSection() {
                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-purple-400 border-2 border-white"></div>
                   </div>
                   <span className="text-xs md:text-sm text-gray-600">Enrolled</span>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm">
-                    Enroll
-                    <ArrowRight className="ml-1 w-3 h-3" />
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm" asChild>
+                    <Link href={`/universities/${college.slug}`}>
+                      View Details
+                      <ArrowRight className="ml-1 w-3 h-3" />
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -146,9 +157,11 @@ export function CollegesSection() {
         </div>
 
         <div className="lg:hidden mt-6 md:mt-8 text-center">
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            See More
-            <ArrowRight className="ml-2 w-4 h-4" />
+          <Button className="bg-primary hover:bg-primary/90 text-white" asChild>
+            <Link href="/colleges">
+              See More
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
           </Button>
         </div>
       </div>

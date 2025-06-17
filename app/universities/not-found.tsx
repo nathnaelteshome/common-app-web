@@ -1,3 +1,5 @@
+"use client"
+
 import { NotFoundBase } from "@/components/not-found-base"
 import { Home, GraduationCap, Search, BookOpen } from "lucide-react"
 

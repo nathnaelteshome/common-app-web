@@ -506,12 +506,12 @@ export function Header() {
                           user?.role === "university"
                             ? "/admin/applications"
                             : user?.role === "admin"
-                              ? "/system-admin/applications"
+                              ? "/system-admin/users"
                               : "/student/applications"
                         }
                         className="flex items-center w-full"
                       >
-                        <span className="text-sm">Applications</span>
+                        <span className="text-sm">{user?.role === "admin" ? "Users" : "Applications"}</span>
                       </Link>
                     </DropdownMenuItem>
 

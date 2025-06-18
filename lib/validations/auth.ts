@@ -110,7 +110,6 @@ export const newPasswordSchema = z
 
 // Types
 export type StudentRegistrationData = z.infer<typeof studentRegistrationSchema>
-export type UniversityRegistrationData = z.infer<typeof universityRegistrationSchema>
 export type SignInData = z.infer<typeof signInSchema>
 export type EmailVerificationData = z.infer<typeof emailVerificationSchema>
 export type PasswordResetData = z.infer<typeof passwordResetSchema>
@@ -150,6 +149,27 @@ export interface UniversityProfile {
   fieldOfStudies: string
   campusImage?: string
   isVerified: boolean
+}
+
+// Extended types for registration data transformation
+export interface UniversityRegistrationData extends z.infer<typeof universityRegistrationSchema> {
+  universityName?: string
+  universityType?: "PUBLIC" | "PRIVATE"
+  website?: string
+  description?: string
+  establishedYear?: number
+  address?: {
+    street: string
+    city: string
+    state?: string
+    zipCode: string
+    country: string
+  }
+  contact?: {
+    phone: string
+    email: string
+    admissions_email?: string
+  }
 }
 
 export interface AdminProfile {

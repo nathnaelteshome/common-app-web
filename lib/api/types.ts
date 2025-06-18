@@ -65,10 +65,9 @@ export interface ForgotPasswordResponse {
 }
 
 export interface ResetPasswordRequest {
-  resetToken: string
+  token: string
   email: string
   password: string
-  confirmPassword: string
 }
 
 export interface ResetPasswordResponse {

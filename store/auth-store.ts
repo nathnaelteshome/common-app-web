@@ -30,12 +30,6 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: !!user,
           error: null,
         })
-
-        // Set cookie for middleware when user is set
-        if (typeof window !== "undefined" && user) {
-          const token = `mock_token_${user.id}`
-          document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
-        }
       },
 
       setLoading: (loading) => set({ isLoading: loading }),
@@ -48,11 +42,6 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           error: null,
         })
-
-        // Remove cookie when signing out
-        if (typeof window !== "undefined") {
-          document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-        }
       },
 
       clearError: () => set({ error: null }),

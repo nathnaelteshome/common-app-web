@@ -1,143 +1,178 @@
 import type { User, SignInData, StudentRegistrationData, UniversityRegistrationData } from "@/lib/validations/auth"
-import { findUserByCredentials, findUserById, findUserByEmail } from "@/data/mock-data"
-import { verificationService } from "@/lib/services/verification-service"
+import { AuthApi } from "@/lib/api/auth"
+import { apiUtils } from "@/lib/api/client"
 
-// Frontend-only authentication service
-// In a real application, this would make API calls to your backend
+// Authentication service integrated with backend API
 
 class AuthService {
   private currentUser: User | null = null
 
   async signIn(data: SignInData): Promise<{ user: User; token: string }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const response = await AuthApi.login({ 
+        email: data.email, 
+        password: data.password 
+      })
 
-    console.log("Attempting sign in with:", data.email)
-
-    const user = findUserByCredentials(data.email, data.password)
-    console.log("Found user:", user ? `${user.email} (${user.role})` : "null")
-
-    if (!user) {
-      console.error("No user found with credentials:", data.email)
-      throw new Error("Invalid email or password")
-    }
-
-    if (!user.isEmailVerified) {
-      throw new Error("Please verify your email before signing in")
-    }
-
-    // Check if university user is verified
-    if (user.role === "university") {
-      const profile = user.profile as any
-      if (!profile?.isVerified) {
-        // University is not verified yet, redirect to verification status
-        const verificationRequest = verificationService.getVerificationRequestByUniversityId(user.id)
-        if (verificationRequest) {
-          throw new Error(`VERIFICATION_PENDING:${verificationRequest.id}`)
-        } else {
-          throw new Error("Your university verification is still pending. Please wait for admin approval.")
-        }
+      if (!response.success || !response.data) {
+        throw new Error("Login failed")
       }
-    }
 
-    // Remove password from user object before returning
-    const { password, ...userWithoutPassword } = user
-    this.currentUser = userWithoutPassword
+      const { user, accessToken } = response.data
+      this.currentUser = user
 
-    const token = `mock_token_${user.id}`
+      // Store user data in localStorage for persistence
+      if (typeof window !== "undefined") {
+        localStorage.setItem("current_user", JSON.stringify(user))
+        // Also set as cookie for middleware access
+        document.cookie = `auth_token=${accessToken}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
+      }
 
-    // Store in localStorage for persistence
-    if (typeof window !== "undefined") {
-      localStorage.setItem("auth_token", token)
-      localStorage.setItem("current_user", JSON.stringify(userWithoutPassword))
-
-      // Also set as cookie for middleware access
-      document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}` // 7 days
-    }
-
-    console.log("Sign in successful for:", userWithoutPassword.email)
-
-    return {
-      user: userWithoutPassword,
-      token,
+      return {
+        user,
+        token: accessToken,
+      }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Login failed. Please try again.")
     }
   }
 
   async signUp(data: StudentRegistrationData | UniversityRegistrationData): Promise<{ message: string }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      // Transform data to match backend API format
+      const registerData = {
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        profile: data.role === "student" ? {
+          firstName: (data as StudentRegistrationData).firstName,
+          lastName: (data as StudentRegistrationData).lastName,
+          username: (data as StudentRegistrationData).username,
+          phone_number: (data as StudentRegistrationData).phoneNumber,
+          date_of_birth: (data as StudentRegistrationData).dateOfBirth,
+          nationality: (data as StudentRegistrationData).nationality || "US",
+          bio: (data as StudentRegistrationData).bio || ""
+        } : {
+          collegeName: (data as UniversityRegistrationData).universityName,
+          universityType: (data as UniversityRegistrationData).universityType,
+          website: (data as UniversityRegistrationData).website,
+          description: (data as UniversityRegistrationData).description,
+          establishedYear: (data as UniversityRegistrationData).establishedYear,
+          fieldOfStudies: (data as UniversityRegistrationData).fieldOfStudies,
+          address: {
+            street: (data as UniversityRegistrationData).address.street,
+            city: (data as UniversityRegistrationData).address.city,
+            state: (data as UniversityRegistrationData).address.state,
+            zipCode: (data as UniversityRegistrationData).address.zipCode,
+            country: (data as UniversityRegistrationData).address.country || "USA"
+          },
+          contact: {
+            phone: (data as UniversityRegistrationData).contact.phone,
+            email: (data as UniversityRegistrationData).contact.email,
+            admissions_email: (data as UniversityRegistrationData).contact.admissions_email
+          }
+        }
+      }
 
-    // In a real app, this would make an API call to create the user
-    // For frontend demo, we'll just simulate success
-    return {
-      message: "Account created successfully. Please check your email for verification.",
+      const response = await AuthApi.register(registerData)
+      
+      if (!response.success) {
+        throw new Error("Registration failed")
+      }
+
+      return {
+        message: "Account created successfully. Please check your email for verification.",
+      }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Registration failed. Please try again.")
     }
   }
 
-  async verifyEmail(code: string): Promise<{ message: string }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800))
+  async verifyEmail(code: string, email: string): Promise<{ message: string }> {
+    try {
+      const response = await AuthApi.verifyEmail(code, email)
+      
+      if (!response.success) {
+        throw new Error("Email verification failed")
+      }
 
-    // Simulate email verification
-    if (code === "123456") {
       return {
         message: "Email verified successfully",
       }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Email verification failed. Please try again.")
     }
-
-    throw new Error("Invalid verification code")
   }
 
   async resendVerificationCode(email: string): Promise<{ message: string }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+      const response = await AuthApi.resendVerification(email)
+      
+      if (!response.success) {
+        throw new Error("Failed to resend verification code")
+      }
 
-    return {
-      message: "Verification code sent to your email",
+      return {
+        message: "Verification code sent to your email",
+      }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Failed to resend verification code. Please try again.")
     }
   }
 
   async sendPasswordResetEmail(email: string): Promise<{ message: string }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const response = await AuthApi.forgotPassword({ email })
+      
+      if (!response.success) {
+        throw new Error("Failed to send password reset email")
+      }
 
-    // Check if user exists
-    const user = findUserByEmail(email)
-    if (!user) {
-      throw new Error("No account found with this email address")
-    }
-
-    // In a real app, this would send an actual email
-    console.log(`Password reset email sent to: ${email}`)
-    console.log("Reset code: 123456") // For testing purposes
-
-    return {
-      message: "Password reset instructions sent to your email",
+      return {
+        message: "Password reset instructions sent to your email",
+      }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Failed to send password reset email. Please try again.")
     }
   }
 
   async resetPasswordWithCode(data: { resetCode: string; email: string; password: string }): Promise<{
     message: string
   }> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1200))
+    try {
+      const response = await AuthApi.resetPassword({
+        token: data.resetCode,
+        email: data.email,
+        password: data.password
+      })
+      
+      if (!response.success) {
+        throw new Error("Password reset failed")
+      }
 
-    // Validate reset code (in real app, this would be stored in database)
-    if (data.resetCode !== "123456") {
-      throw new Error("Invalid or expired reset code")
-    }
-
-    // Check if user exists
-    const user = findUserByEmail(data.email)
-    if (!user) {
-      throw new Error("No account found with this email address")
-    }
-
-    // In a real app, this would update the password in the database
-    console.log(`Password reset successful for: ${data.email}`)
-
-    return {
-      message: "Password reset successfully",
+      return {
+        message: "Password reset successfully",
+      }
+    } catch (error) {
+      if (apiUtils.isApiError(error)) {
+        throw new Error(apiUtils.getErrorMessage(error))
+      }
+      throw new Error("Password reset failed. Please try again.")
     }
   }
 
@@ -145,41 +180,32 @@ class AuthService {
     if (typeof window === "undefined") return null
 
     try {
-      const token = localStorage.getItem("auth_token")
+      // Check if user is authenticated
+      if (!AuthApi.isAuthenticated()) {
+        return null
+      }
+
+      // Try to get user from localStorage first (for performance)
       const storedUser = localStorage.getItem("current_user")
-
-      if (!token || !storedUser) {
-        return null
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        this.currentUser = user
+        return user
       }
 
-      // Extract user ID from token
-      const userId = token.replace("mock_token_", "")
-      const user = findUserById(userId)
-
-      if (!user) {
-        this.signOut()
-        return null
+      // If no stored user, fetch from API
+      const response = await AuthApi.getCurrentUser()
+      if (response.success && response.data) {
+        const user = response.data
+        this.currentUser = user
+        
+        // Store in localStorage
+        localStorage.setItem("current_user", JSON.stringify(user))
+        
+        return user
       }
 
-      // Additional verification check for university users
-      if (user.role === "university") {
-        const profile = user.profile as any
-        if (!profile?.isVerified) {
-          // University verification status might have changed, check again
-          const isVerified = verificationService.isUniversityVerified(user.id)
-          if (!isVerified) {
-            // Still not verified, user should not have access
-            console.log("University user not verified, signing out")
-            this.signOut()
-            return null
-          }
-        }
-      }
-
-      // Remove password from user object
-      const { password, ...userWithoutPassword } = user
-      this.currentUser = userWithoutPassword
-      return userWithoutPassword
+      return null
     } catch (error) {
       console.error("Error getting current user:", error)
       this.signOut()
@@ -188,30 +214,48 @@ class AuthService {
   }
 
   async signOut(): Promise<void> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    try {
+      // Call API logout endpoint
+      await AuthApi.logout()
+    } catch (error) {
+      console.error("Logout API call failed:", error)
+      // Continue with local cleanup even if API call fails
+    } finally {
+      // Always clear local data
+      this.currentUser = null
 
-    this.currentUser = null
-
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("current_user")
-
-      // Remove auth cookie
-      document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("current_user")
+        // Remove auth cookie
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      }
     }
   }
 
   // Method to check if current user can access admin features
   canAccessAdminFeatures(): boolean {
-    if (!this.currentUser) return false
+    return AuthApi.isAdmin() || AuthApi.isUniversity()
+  }
 
-    if (this.currentUser.role === "university") {
-      const profile = this.currentUser.profile as any
-      return profile?.isVerified === true
-    }
+  // Helper methods for role checking
+  isAuthenticated(): boolean {
+    return AuthApi.isAuthenticated()
+  }
 
-    return this.currentUser.role === "admin"
+  isStudent(): boolean {
+    return AuthApi.isStudent()
+  }
+
+  isUniversity(): boolean {
+    return AuthApi.isUniversity()
+  }
+
+  isAdmin(): boolean {
+    return AuthApi.isAdmin()
+  }
+
+  getCurrentUserRole(): string | null {
+    return AuthApi.getCurrentUserRole()
   }
 }
 

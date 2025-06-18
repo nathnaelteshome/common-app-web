@@ -14,7 +14,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { universityRegistrationSchema, type UniversityRegistrationData } from "@/lib/validations/auth"
 import { useAuthStore } from "@/store/auth-store"
-import { verificationService } from "@/lib/services/verification-service"
+import { authService } from "@/lib/auth-service"
 import { toast } from "sonner"
 
 interface UniversityRegistrationFormProps {
@@ -56,23 +56,35 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
       setLoading(true)
       setError(null)
 
-      // Generate unique ID for the university
-      const universityId = `uni-${Date.now()}`
-
-      // Prepare university data with ID
-      const universityData = {
+      // Transform data to match backend API expectations
+      const registrationData: UniversityRegistrationData = {
         ...data,
-        id: universityId,
+        universityName: data.collegeName,
+        universityType: data.documents === "public_university" ? "PUBLIC" : "PRIVATE",
+        website: "", // Will be added in future versions
+        description: "", // Will be added in future versions
+        establishedYear: new Date().getFullYear(), // Default value for now
+        address: {
+          street: data.address1 + (data.address2 ? `, ${data.address2}` : ""),
+          city: data.city,
+          state: "", // Will be added in future versions
+          zipCode: data.postcode,
+          country: data.country.toUpperCase()
+        },
+        contact: {
+          phone: data.phone1,
+          email: data.email,
+          admissions_email: data.email // Default to same email
+        }
       }
 
-      // Submit verification request with documents
-      const verificationRequestId = await verificationService.submitVerificationRequest(universityData, documents)
+      await authService.signUp(registrationData)
 
       toast.success("Registration submitted successfully!")
 
-      // Show success message and redirect to verification status
+      // Redirect to email verification
       setTimeout(() => {
-        router.push(`/admin/verification/status?requestId=${verificationRequestId}`)
+        router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`)
       }, 2000)
     } catch (error) {
       console.error("Registration error:", error)

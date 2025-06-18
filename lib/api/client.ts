@@ -130,7 +130,9 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), finalConfig.timeout || DEFAULT_TIMEOUT)
 
     try {
-      const response = await fetch(`${this.baseURL}${finalConfig.url}`, {
+      const requestUrl = `${this.baseURL}${finalConfig.url}`
+        
+      const response = await fetch(requestUrl, {
         method: finalConfig.method,
         headers: finalConfig.headers,
         body: finalConfig.body ? JSON.stringify(finalConfig.body) : undefined,

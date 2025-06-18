@@ -39,14 +39,14 @@ export function EmailVerificationForm() {
       setLoading(true)
       setError(null)
 
-      await authService.verifyEmail(data)
+      await authService.verifyEmail(data.verificationCode, email)
 
       // Redirect to success page
       router.push("/auth/verification-success")
     } catch (error) {
       console.error("Verification error:", error)
-      // Redirect to error page
-      router.push("/auth/verification-error")
+      setError(error instanceof Error ? error.message : "Verification failed")
+      // Don't automatically redirect to error page, show error instead
     } finally {
       setLoading(false)
     }

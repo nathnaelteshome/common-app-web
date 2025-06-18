@@ -1,5 +1,5 @@
 // Base API configuration
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://common-app-backend.onrender.com"
 export const API_VERSION = "v1"
 export const API_PREFIX = `/api/${API_VERSION}`
 

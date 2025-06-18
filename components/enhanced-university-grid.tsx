@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Users, BookOpen, ArrowRight, TrendingUp, Building, Calendar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
+import { checkDomainOfScale } from "recharts/types/util/ChartUtils"
 
 interface EnhancedUniversityGridProps {
   universities: University[]
@@ -22,6 +23,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
       </div>
     )
   }
+  console.log("universities enhanced",universities)
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -29,7 +31,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
         <Card key={university.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
           <div className="relative">
             <Image
-              src={university.image || "/placeholder.svg"}
+              src={university.profile.campus_image || "/placeholder.svg"}
               alt={university.name}
               width={400}
               height={200}
@@ -68,7 +70,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
               <div className="flex items-center justify-between text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  <span>{university.totalApplicants.toLocaleString()} Applicants</span>
+                  <span>{university.applicationCount.toLocaleString()} Applicants</span>
                 </div>
                 <span className="text-green-600 font-medium">{university.acceptanceRate}% Acceptance</span>
               </div>
@@ -76,11 +78,11 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
               <div className="flex items-center justify-between text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="w-3 h-3" />
-                  <span>{university.totalStudents.toLocaleString()} Students</span>
+                  <span>{university.applicationCount.toLocaleString()} Students</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <BookOpen className="w-3 h-3" />
-                  <span>{university.programs.length} Programs</span>
+                  <span>{university.programCount.toLocaleString()} Programs</span>
                 </div>
               </div>
 
@@ -93,7 +95,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
             <div className="mb-4">
               <p className="text-xs text-gray-600 mb-2">Popular Programs:</p>
               <div className="flex flex-wrap gap-1">
-                {university.programs.slice(0, 2).map((program) => (
+                {/* {university.programs.slice(0, 2).map((program) => (
                   <Badge key={program.id} variant="outline" className="text-xs">
                     {program.name}
                   </Badge>
@@ -102,7 +104,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
                   <Badge variant="outline" className="text-xs">
                     +{university.programs.length - 2} more
                   </Badge>
-                )}
+                )} */}
               </div>
             </div>
 

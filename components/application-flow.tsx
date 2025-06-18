@@ -10,7 +10,7 @@ import { ProgramSelection } from "@/components/program-selection"
 import { ApplicationForm } from "@/components/application-form"
 import { PaymentStep } from "@/components/payment-step"
 import { ApplicationReview } from "@/components/application-review"
-import type { University as UniversityType } from "@/data/universities-data"
+import type UniversityType from "@/data/universities-data"
 
 interface ApplicationFlowProps {
   university: UniversityType | null

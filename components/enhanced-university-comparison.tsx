@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Star, MapPin, GraduationCap, Award, X, Plus, Share, Download } from "lucide-react"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 import { universitiesData } from "@/data/universities-data"
 
 interface ComparisonMetric {

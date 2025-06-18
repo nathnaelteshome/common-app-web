@@ -11,8 +11,10 @@ import { UniversityGallery } from "@/components/university-gallery"
 import { ApplicationCTA } from "@/components/application-cta"
 import { RelatedUniversities } from "@/components/related-universities"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { getUniversityBySlug } from "@/data/universities-data"
-import type { University } from "@/data/universities-data"
+import { universityApi } from "@/lib/api/universities"
+import { apiUtils } from "@/lib/api/client"
+import { toast } from "sonner"
+import type { University } from "@/lib/api/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -28,16 +30,22 @@ export default function UniversityDetailPage() {
       try {
         setLoading(true)
         const slug = params.slug as string
-        const universityData = getUniversityBySlug(slug)
+        
+        const response = await universityApi.getUniversityBySlug(slug)
 
-        if (!universityData) {
+        if (!response.success || !response.data) {
           setError("University not found")
           return
         }
 
-        setUniversity(universityData)
+        setUniversity(response.data)
       } catch (err) {
-        setError("Failed to load university information")
+        console.error("Error fetching university:", err)
+        if (apiUtils.isApiError(err)) {
+          setError(apiUtils.getErrorMessage(err))
+        } else {
+          setError("Failed to load university information")
+        }
       } finally {
         setLoading(false)
       }

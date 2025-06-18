@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Upload, FileText, Save } from "lucide-react"
 import { applicationFormSchema, type ApplicationFormData } from "@/lib/validations/application"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface ApplicationFormProps {
   university: University

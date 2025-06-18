@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, AlertCircle, FileText, Calendar, DollarSign, Clock } from "lucide-react"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface AdmissionRequirementsProps {
   university: University

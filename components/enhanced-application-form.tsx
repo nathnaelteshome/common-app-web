@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Upload, Save } from "lucide-react"
 import type { ApplicationFormData } from "@/lib/validations/application"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface DynamicField {
   id: string

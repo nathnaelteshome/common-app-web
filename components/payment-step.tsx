@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, CreditCard, Building, Smartphone, Shield } from "lucide-react"
 import { paymentSchema, type PaymentData } from "@/lib/validations/payment"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface PaymentStepProps {
   university: University

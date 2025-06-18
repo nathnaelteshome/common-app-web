@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Search, Clock, DollarSign, Calendar, ArrowLeft } from "lucide-react"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface ProgramSelectionProps {
   university: University

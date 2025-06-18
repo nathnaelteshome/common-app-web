@@ -10,9 +10,10 @@ import { EnhancedUniversityGrid } from "@/components/enhanced-university-grid"
 import { ProgramBrowser } from "@/components/program-browser"
 import { Footer } from "@/components/footer"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getUniversities, sortUniversities, getUniversitiesByCategory } from "@/data/universities-data"
-import { universitySearchService } from "@/lib/search-service"
-import type { University } from "@/data/universities-data"
+import { universityApi } from "@/lib/api/universities"
+import { apiUtils } from "@/lib/api/client"
+import { toast } from "sonner"
+import type { University } from "@/lib/api/types"
 
 export default function CollegesPage() {
   const searchParams = useSearchParams()
@@ -20,85 +21,173 @@ export default function CollegesPage() {
   const [sortBy, setSortBy] = useState("applicants-desc")
   const [activeTab, setActiveTab] = useState("universities")
   const [isLoading, setIsLoading] = useState(true)
-
+  
   // Memoize search parameters to prevent unnecessary re-renders
   const searchQuery = useMemo(() => searchParams.get("search"), [searchParams])
   const category = useMemo(() => searchParams.get("category"), [searchParams])
-
+  
   // Initialize universities data
   useEffect(() => {
-    const allUniversities = getUniversities()
-    let results = allUniversities
-
-    // Handle category filtering first
-    if (category) {
-      results = getUniversitiesByCategory(category)
+    const fetchUniversities = async () => {
+      try {
+        setIsLoading(true)
+        
+        // Prepare API parameters
+        const params: any = {
+          page: 1,
+          limit: 50, // Adjust based on needs
+          active: true,
+          verified: true,
+        }
+        
+        // Add search query if provided
+        if (searchQuery) {
+          params.search = searchQuery
+        }
+        
+        // Add sorting
+        const [sortField, sortOrder] = sortBy.split('-')
+        if (sortField === 'applicants') {
+          params.sortBy = 'created_at' // Fallback to creation date since applications sorting isn't supported
+        } else if (sortField === 'name') {
+          params.sortBy = 'name'
+        } else {
+          params.sortBy = 'created_at'
+        }
+        params.sortOrder = sortOrder || 'desc'
+        
+        const response = await universityApi.listUniversities(params)
+        console.log("universities response",response)
+        
+        if (response.success && response.data) {
+          let universities = response.data.universities  || []
+          
+          
+        console.log("universities response 2",universities)
+          // Apply client-side sorting if sorting by applicants (since API doesn't support it)
+          if (sortField === 'applicants') {
+            universities = [...universities].sort((a, b) => {
+              const aCount = a.applicationCount || 0
+              const bCount = b.applicationCount || 0
+              return sortOrder === 'desc' ? bCount - aCount : aCount - bCount
+            })
+          }
+          
+          setUniversities(universities)
+        } else {
+          toast.error("Failed to load universities")
+          setUniversities([])
+        }
+      } catch (error) {
+        console.error("Error fetching universities:", error)
+        toast.error("Failed to load universities")
+        setUniversities([])
+      } finally {
+        setIsLoading(false)
+      }
     }
-
-    // Then handle search query
-    if (searchQuery && !category) {
-      const searchResults = universitySearchService.search(searchQuery)
-      results = searchResults.map((r) => r.item)
-    }
-
-    // If both category and search query exist, filter the category results by search
-    if (category && searchQuery) {
-      const categoryResults = getUniversitiesByCategory(category)
-      const searchResults = universitySearchService.search(searchQuery, categoryResults)
-      results = searchResults.map((r) => r.item)
-    }
-
-    const sorted = sortUniversities(results, sortBy)
-    setUniversities(sorted)
-    setIsLoading(false)
+    
+    fetchUniversities()
   }, [searchQuery, category, sortBy])
-
-  const handleSearch = (filters: any, searchResults?: University[]) => {
+  
+  const handleSearch = async (filters: any, searchResults?: University[]) => {
     if (searchResults) {
-      // Use advanced search results
-      const sorted = sortUniversities(searchResults, sortBy)
-      setUniversities(sorted)
-    } else {
-      // Fallback to basic filtering
-      let results = getUniversities()
+      setUniversities(searchResults)
+      return
+    }
 
-      if (filters.query) {
-        const searchResults = universitySearchService.search(filters.query)
-        results = searchResults.map((r) => r.item)
+    try {
+      setIsLoading(true)
+      
+      const params: any = {
+        page: 1,
+        limit: 50,
+        active: true,
+        verified: true,
       }
 
-      // Apply additional filters
-      if (filters.programType) {
-        results = results.filter((uni) => uni.programs.some((program) => program.type === filters.programType))
+      // Apply filters
+      if (filters.query) {
+        params.search = filters.query
       }
 
       if (filters.location) {
-        results = results.filter((uni) => uni.region === filters.location)
+        params.city = filters.location
       }
 
       if (filters.universityType) {
-        results = results.filter((uni) => uni.type === filters.universityType)
+        // Map frontend type to backend type
+        params.type = filters.universityType
       }
 
-      if (filters.degreeType) {
-        results = results.filter((uni) => uni.programs.some((program) => program.degree === filters.degreeType))
+      // Add sorting
+      const [sortField, sortOrder] = sortBy.split('-')
+      if (sortField === 'applicants') {
+        params.sortBy = 'created_at' // Fallback to creation date since applications sorting isn't supported
+      } else if (sortField === 'name') {
+        params.sortBy = 'name'
+      } else {
+        params.sortBy = 'created_at'
       }
+      params.sortOrder = sortOrder || 'desc'
 
-      const sorted = sortUniversities(results, sortBy)
-      setUniversities(sorted)
+      const response = await universityApi.listUniversities(params)
+      
+      if (response.success && response.data) {
+        let universities = response.data.data || []
+        
+        // Apply client-side sorting if sorting by applicants (since API doesn't support it)
+        if (sortField === 'applicants') {
+          universities = [...universities].sort((a, b) => {
+            const aCount = a.applicationCount || 0
+            const bCount = b.applicationCount || 0
+            return sortOrder === 'desc' ? bCount - aCount : aCount - bCount
+          })
+        }
+        
+        setUniversities(universities)
+      } else {
+        toast.error("Search failed")
+        setUniversities([])
+      }
+    } catch (error) {
+      console.error("Error searching universities:", error)
+      toast.error("Search failed")
+      setUniversities([])
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleClearFilters = () => {
-    const allUniversities = getUniversities()
-    const sorted = sortUniversities(allUniversities, sortBy)
-    setUniversities(sorted)
+  const handleClearFilters = async () => {
+    try {
+      setIsLoading(true)
+      
+      const params = {
+        page: 1,
+        limit: 50,
+        active: true,
+        verified: true,
+        sortBy: 'created_at',
+        sortOrder: 'desc' as const,
+      }
+
+      const response = await universityApi.listUniversities(params)
+      
+      if (response.success && response.data) {
+        setUniversities(response.data.data || [])
+      }
+    } catch (error) {
+      console.error("Error clearing filters:", error)
+      toast.error("Failed to load universities")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy)
-    // Re-sort current universities with new sort criteria
-    setUniversities((prev) => sortUniversities([...prev], newSortBy))
+    // Trigger re-fetch with new sort criteria (handled by useEffect)
   }
 
   if (isLoading) {
@@ -114,6 +203,7 @@ export default function CollegesPage() {
       </div>
     )
   }
+  console.log("universities 2",universities)
 
   return (
     <div className="min-h-screen">

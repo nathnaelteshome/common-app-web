@@ -8,7 +8,7 @@ import { ApplicationFlow } from "@/components/application-flow"
 import { GuestApplicationPrompt } from "@/components/guest-application-prompt"
 import { useAuthStore } from "@/store/auth-store"
 import { getUniversities } from "@/data/universities-data"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 import { Button } from "@/components/ui/button"
 
 export default function ApplyPage() {

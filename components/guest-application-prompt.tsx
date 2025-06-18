@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { GraduationCap, UserPlus, LogIn, CheckCircle, Clock, Shield, FileText, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface GuestApplicationPromptProps {
   university: University | null

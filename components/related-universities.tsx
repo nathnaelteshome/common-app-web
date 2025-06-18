@@ -5,7 +5,7 @@ import { Star, MapPin, Users, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { getUniversitiesByRegion } from "@/data/universities-data"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface RelatedUniversitiesProps {
   currentUniversity: University

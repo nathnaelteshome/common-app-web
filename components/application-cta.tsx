@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Users, DollarSign, GraduationCap, ArrowRight, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface ApplicationCTAProps {
   university: University

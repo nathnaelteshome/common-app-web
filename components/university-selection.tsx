@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, Star } from "lucide-react"
 import { universities } from "@/data/universities-data"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface UniversitySelectionProps {
   selectedUniversity: University | null

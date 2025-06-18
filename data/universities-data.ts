@@ -11,7 +11,64 @@ export interface Program {
   applicationDeadline: string
 }
 
-export interface University {
+export interface ProfileAddress {
+  city: string
+  region: string
+  country: string
+  address1: string
+  address2?: string
+  postcode: string
+}
+
+export interface ProfileContact {
+  email: string
+  phone1: string
+  phone2?: string
+}
+
+export interface ProfileLocation {
+  latitude: number
+  longitude: number
+}
+
+export interface ProfileRankings {
+  rating: number
+  national_rank: number
+  international_rank: number
+}
+
+export default interface UniversityProfile {
+  acceptance_rate: number
+  accreditation: string[]
+  address: ProfileAddress
+  campus_image: string
+  campus_size: string
+  college_name: string
+  contact: ProfileContact
+  created_at: string
+  description: string
+  established_year: number
+  facilities: string[]
+  field_of_studies: string
+  id: string
+  is_active: boolean
+  is_verified: boolean
+  location: ProfileLocation
+  rankings: ProfileRankings
+  short_name: string
+  slug: string
+  student_to_faculty_ratio: string
+  total_applicants: number
+  total_students: number
+  university_type: "Public" | "Private"
+  updated_at: string
+  user_id: string
+  verification_documents: string[]
+  website: string
+}
+
+
+export default interface University {
   id: string
   name: string
   shortName: string
@@ -23,6 +80,9 @@ export interface University {
   establishedYear: number
   rating: number
   totalStudents: number
+  applicationCount: number
+  campusImage: string
+  programCount: number
   totalApplicants: number
   acceptanceRate: number
   image: string
@@ -33,9 +93,11 @@ export interface University {
   accreditations: string[]
   campusSize: string
   studentToFacultyRatio: string
+  profile: UniversityProfile
+  
 }
 
-export const universities: University[] = [
+export const universities: any = [
   {
     id: "1",
     name: "Addis Ababa Institute of Technology University",

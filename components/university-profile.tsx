@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, GraduationCap, Star, Globe, Phone, Mail, Building, Award, BookOpen } from "lucide-react"
 import Image from "next/image"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface UniversityProfileProps {
   university: University

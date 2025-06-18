@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Camera, Play, ExternalLink, MapPin } from "lucide-react"
 import Image from "next/image"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface UniversityGalleryProps {
   university: University

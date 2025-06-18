@@ -6,8 +6,7 @@
  */
 
 import { SearchIndex, type SearchResult, type SearchOptions } from "./search-algorithm"
-import {
-  type University,
+import University, {
   type Program,
   getUniversities,
   getAllPrograms,

@@ -5,8 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { getUniversityBySlug } from "@/data/universities-data"
-import type { University } from "@/data/universities-data"
+import { universityApi } from "@/lib/api/universities"
+import { apiUtils } from "@/lib/api/client"
+import { toast } from "sonner"
+import type { University, Program } from "@/lib/api/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,30 +20,55 @@ export default function UniversityProgramsPage() {
   const params = useParams()
   const router = useRouter()
   const [university, setUniversity] = useState<University | null>(null)
+  const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchUniversity = async () => {
+    const fetchUniversityAndPrograms = async () => {
       try {
         setLoading(true)
         const slug = params.slug as string
-        const universityData = getUniversityBySlug(slug)
+        
+        // Fetch university details
+        const universityResponse = await universityApi.getUniversityBySlug(slug)
 
-        if (!universityData) {
+        if (!universityResponse.success || !universityResponse.data) {
           setError("University not found")
           return
         }
 
+        const universityData = universityResponse.data
         setUniversity(universityData)
+
+        // Fetch university programs
+        try {
+          const programsResponse = await universityApi.getUniversityPrograms(universityData.id)
+          if (programsResponse.success && programsResponse.data) {
+            setPrograms(programsResponse.data)
+          } else {
+            // Use programs from university data if API call fails
+            setPrograms(universityData.programs || [])
+          }
+        } catch (programsError) {
+          console.error("Error fetching programs:", programsError)
+          // Use programs from university data as fallback
+          setPrograms(universityData.programs || [])
+        }
+
       } catch (err) {
-        setError("Failed to load university information")
+        console.error("Error fetching university:", err)
+        if (apiUtils.isApiError(err)) {
+          setError(apiUtils.getErrorMessage(err))
+        } else {
+          setError("Failed to load university information")
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    fetchUniversity()
+    fetchUniversityAndPrograms()
   }, [params.slug])
 
   if (loading) {
@@ -102,15 +129,16 @@ export default function UniversityProgramsPage() {
     { label: "Programs", href: `/universities/${university.slug}/programs` },
   ]
 
-  const groupedPrograms = university.programs.reduce(
+  const groupedPrograms = programs.reduce(
     (acc, program) => {
-      if (!acc[program.type]) {
-        acc[program.type] = []
+      const type = program.category || program.type || "Other"
+      if (!acc[type]) {
+        acc[type] = []
       }
-      acc[program.type].push(program)
+      acc[type].push(program)
       return acc
     },
-    {} as Record<string, typeof university.programs>,
+    {} as Record<string, Program[]>,
   )
 
   return (
@@ -131,13 +159,13 @@ export default function UniversityProgramsPage() {
               <div className="flex items-center gap-4 text-gray-600 mt-2">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{university.location}</span>
+                  <span>{university.location?.city}, {university.location?.state}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span>{university.rating}</span>
+                  <span>4.5</span>
                 </div>
-                <Badge variant="outline">{university.type}</Badge>
+                <Badge variant="outline">University</Badge>
               </div>
             </div>
           </div>
@@ -155,7 +183,7 @@ export default function UniversityProgramsPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{university.programs.length}</div>
+                <div className="text-2xl font-bold text-primary">{programs.length}</div>
                 <div className="text-sm text-gray-600">Total Programs</div>
               </div>
               <div className="text-center">
@@ -164,13 +192,13 @@ export default function UniversityProgramsPage() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  {university.programs.reduce((sum, program) => sum + program.availableSeats, 0)}
+                  {programs.reduce((sum, program) => sum + (program.availableSeats || 0), 0)}
                 </div>
                 <div className="text-sm text-gray-600">Available Seats</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  ${Math.min(...university.programs.map((p) => p.tuitionFee)).toLocaleString()}+
+                  ${programs.length > 0 ? Math.min(...programs.map((p) => p.tuitionFee || 0)).toLocaleString() : '0'}+
                 </div>
                 <div className="text-sm text-gray-600">Starting From</div>
               </div>

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, DollarSign, Users, Calendar, BookOpen, ChevronRight, GraduationCap } from "lucide-react"
 import Link from "next/link"
-import type { University } from "@/data/universities-data"
+import type University from "@/data/universities-data"
 
 interface ProgramsListProps {
   university: University

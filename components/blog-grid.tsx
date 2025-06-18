@@ -1,9 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, MessageCircle, ArrowRight } from "lucide-react"
+import { Calendar, MessageCircle, ArrowRight, Clock } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type { BlogPost } from "@/data/blog-data"
+import type { BlogPost } from "@/lib/api/types"
 
 interface BlogGridProps {
   posts: BlogPost[]
@@ -33,22 +33,37 @@ export function BlogGrid({ posts }: BlogGridProps) {
               <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  <span>{post.date}</span>
+                  <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" />
                   <span>Comment ({post.commentCount})</span>
                 </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{post.readTime} min read</span>
+                </div>
               </div>
 
-              <h3 className="font-semibold text-gray-800 mb-4 line-clamp-3">{post.title}</h3>
+              <div className="mb-2">
+                <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                  {post.category.name}
+                </span>
+              </div>
 
-              <Link href={`/blog/${post.slug}`}>
-                <Button className="bg-primary hover:bg-primary/90 text-white">
-                  Read More
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
+              <h3 className="font-semibold text-gray-800 mb-2 line-clamp-3">{post.title}</h3>
+              
+              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">By {post.author}</span>
+                <Link href={`/blog/${post.slug}`}>
+                  <Button className="bg-primary hover:bg-primary/90 text-white">
+                    Read More
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ))}

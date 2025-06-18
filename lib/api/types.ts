@@ -404,6 +404,100 @@ export interface FileUploadResponse {
   uploadedAt: string
 }
 
+// Blog Types
+export interface BlogCategory {
+  id: string
+  name: string
+  slug: string
+  description: string
+  postCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BlogPost {
+  id: string
+  slug: string
+  title: string
+  excerpt: string
+  content: string
+  image: string
+  author: string
+  category: BlogCategory
+  tags: string[]
+  status: "draft" | "published" | "archived"
+  isFeatured: boolean
+  commentCount: number
+  viewCount: number
+  readTime: number
+  publishedAt: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BlogPostCreateRequest {
+  slug: string
+  title: string
+  excerpt: string
+  content: string
+  image: string
+  author: string
+  categoryId: string
+  tags: string[]
+  status: "draft" | "published" | "archived"
+  isFeatured: boolean
+}
+
+export interface BlogCategoryCreateRequest {
+  name: string
+  slug: string
+  description: string
+  isActive: boolean
+}
+
+export interface BlogPostsResponse {
+  posts: BlogPost[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+export interface BlogCategoriesResponse {
+  categories: BlogCategory[]
+}
+
+export interface BlogSearchResponse {
+  query: string
+  posts: BlogPost[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+export interface BlogCategoryWithPostsResponse {
+  category: BlogCategory
+  posts: BlogPost[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
 // Error Types
 export interface ApiError {
   code: string

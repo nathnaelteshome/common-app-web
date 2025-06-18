@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, X, MapPin, GraduationCap, Building, Clock, Zap } from "lucide-react"
+import { universityApi } from "@/lib/api/universities"
+import { apiUtils } from "@/lib/api/client"
+import type { University } from "@/lib/api/types"
 import { programTypes, regions, degreeTypes } from "@/data/universities-data"
-import { universitySearchService, programSearchService, getSearchSuggestions } from "@/lib/search-service"
 
 interface SearchFilters {
   query: string
@@ -52,20 +54,28 @@ export function EnhancedSearch({
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
-  // Debounced suggestions
+  // Debounced suggestions using API
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       if (filters.query.length >= 2) {
-        const suggestions = getSearchSuggestions(filters.query)
-        const combined =
-          searchMode === "programs"
-            ? suggestions.programs
-            : searchMode === "universities"
-              ? suggestions.universities
-              : [...suggestions.universities.slice(0, 3), ...suggestions.programs.slice(0, 3)]
-
-        setSuggestions(combined.slice(0, 6))
-        setShowSuggestions(true)
+        try {
+          const response = await universityApi.listUniversities({
+            search: filters.query,
+            limit: 6,
+            active: true,
+            verified: true
+          })
+          
+          if (response.success && response.data) {
+            const suggestions = response.data.universities.map(uni => uni.name)
+            setSuggestions(suggestions)
+            setShowSuggestions(true)
+          }
+        } catch (error) {
+          console.error("Error fetching suggestions:", error)
+          setSuggestions([])
+          setShowSuggestions(false)
+        }
       } else {
         setSuggestions([])
         setShowSuggestions(false)
@@ -93,62 +103,72 @@ export function EnhancedSearch({
   }, [])
 
   const handleSearch = async () => {
-    if (!filters.query.trim()) return
-
     setIsSearching(true)
     const startTime = performance.now()
 
     try {
-      let results
-      let algorithmUsed = "Advanced Multi-Stage Search"
-
-      if (searchMode === "universities") {
-        const searchResults = universitySearchService.search(filters.query, {
-          maxResults: 50,
-          boostFactors: {
-            name: 4.0,
-            type: 2.5,
-            location: 2.0,
-            description: 1.0,
-          },
-        })
-        results = searchResults.map((r) => r.item)
-        algorithmUsed += " (Universities)"
-      } else if (searchMode === "programs") {
-        const searchResults = programSearchService.search(filters.query, {
-          maxResults: 50,
-          boostFactors: {
-            name: 5.0,
-            type: 3.0,
-            description: 1.5,
-            location: 1.0,
-          },
-        })
-        results = searchResults.map((r) => r.item)
-        algorithmUsed += " (Programs)"
+      const searchParams: any = {
+        page: 1,
+        limit: 50,
+        active: true,
+        verified: true,
       }
 
-      // Apply additional filters
-      if (results && filters.programType) {
-        results = results.filter(
-          (item: any) =>
-            item.programs?.some((p: any) => p.type === filters.programType) || item.type === filters.programType,
-        )
+      // Add search query if provided
+      if (filters.query.trim()) {
+        searchParams.search = filters.query.trim()
       }
 
-      if (results && filters.location) {
-        results = results.filter((item: any) => item.region === filters.location || item.location === filters.location)
+      // Add university type filter
+      if (filters.universityType && filters.universityType !== "all") {
+        searchParams.type = filters.universityType
       }
 
-      if (results && filters.universityType) {
-        results = results.filter((item: any) => item.type === filters.universityType)
-      }
+      // Note: API supports city parameter, but we're using regions in our UI
+      // We'll let the search parameter handle location matching instead
+      // since the API searches in university profile description which may contain location info
 
-      if (results && filters.degreeType) {
-        results = results.filter(
-          (item: any) =>
-            item.programs?.some((p: any) => p.degree === filters.degreeType) || item.degree === filters.degreeType,
-        )
+      // Add sorting
+      searchParams.sortBy = "name"
+      searchParams.sortOrder = "asc"
+
+      const response = await universityApi.listUniversities(searchParams)
+      
+      let results: University[] = []
+      let algorithmUsed = "University API Search"
+
+      if (response.success && response.data) {
+        results = response.data.universities || []
+
+        // Apply client-side filters for program type, degree type, and location
+        if (filters.location && filters.location !== "all") {
+          results = results.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            
+            // Check if location matches in various profile fields
+            const locationMatch = 
+              profile.address?.region?.toLowerCase().includes(filters.location.toLowerCase()) ||
+              profile.address?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+              profile.location?.toLowerCase().includes(filters.location.toLowerCase())
+            
+            return locationMatch
+          })
+        }
+
+        if (filters.programType && filters.programType !== "all") {
+          results = results.filter((university) =>
+            university.programs?.some((program) => program.type === filters.programType)
+          )
+        }
+
+        if (filters.degreeType && filters.degreeType !== "all") {
+          results = results.filter((university) =>
+            university.programs?.some((program) => program.degree === filters.degreeType)
+          )
+        }
+
+        algorithmUsed += ` (${searchMode})`
       }
 
       const endTime = performance.now()
@@ -156,7 +176,7 @@ export function EnhancedSearch({
 
       setSearchStats({
         searchTime,
-        totalResults: results?.length || 0,
+        totalResults: results.length,
         algorithmUsed,
       })
 
@@ -164,6 +184,12 @@ export function EnhancedSearch({
       setShowSuggestions(false)
     } catch (error) {
       console.error("Search error:", error)
+      setSearchStats({
+        searchTime: 0,
+        totalResults: 0,
+        algorithmUsed: "Search Failed"
+      })
+      onSearch(filters, [])
     } finally {
       setIsSearching(false)
     }
@@ -255,7 +281,7 @@ export function EnhancedSearch({
           <div className="flex gap-2">
             <Button
               onClick={handleSearch}
-              disabled={isSearching || !filters.query.trim()}
+              disabled={isSearching}
               className="bg-primary hover:bg-primary/90 text-white"
             >
               {isSearching ? (

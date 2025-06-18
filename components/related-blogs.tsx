@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, MessageCircle, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type { BlogPost } from "@/data/blog-data"
+import type { BlogPost } from "@/lib/api/types"
 
 interface RelatedBlogsProps {
   posts: BlogPost[]
@@ -30,7 +30,7 @@ export function RelatedBlogs({ posts }: RelatedBlogsProps) {
               <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  <span>{post.date}</span>
+                  <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MessageCircle className="w-3 h-3" />

@@ -30,13 +30,9 @@ import {
   CheckCircle,
 } from "lucide-react"
 import Link from "next/link"
-import {
-  mockUniversityBlogPosts,
-  blogCategories,
-  getBlogStats,
-  searchBlogPosts,
-  type BlogPost,
-} from "@/data/mock-blog-management"
+import { blogApi } from "@/lib/api/blog"
+import type { BlogPost, BlogCategory } from "@/lib/api/types"
+import { toast } from "sonner"
 
 export default function AdminBlogPage() {
   const { user, isAuthenticated } = useAuthStore()
@@ -45,36 +41,92 @@ export default function AdminBlogPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
-  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(mockUniversityBlogPosts)
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [categories, setCategories] = useState<BlogCategory[]>([])
+  const [blogStats, setBlogStats] = useState({
+    totalPosts: 0,
+    publishedPosts: 0,
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    avgViewsPerPost: 0,
+    avgLikesPerPost: 0
+  })
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "university") {
       router.push("/auth/sign-in")
     } else {
-      setIsLoading(false)
+      fetchData()
     }
   }, [isAuthenticated, user, router])
 
-  useEffect(() => {
-    let posts = mockUniversityBlogPosts
+  const fetchData = async () => {
+    try {
+      setIsLoading(true)
+      
+      // Fetch blog posts
+      const postsResponse = await blogApi.listPosts({
+        limit: 50,
+        sortBy: "created_at",
+        sortOrder: "desc"
+      })
 
+      // Fetch categories
+      const categoriesResponse = await blogApi.listCategories()
+
+      if (postsResponse.success && postsResponse.data) {
+        setPosts(postsResponse.data.posts)
+        
+        // Calculate stats
+        const totalPosts = postsResponse.data.posts.length
+        const publishedPosts = postsResponse.data.posts.filter(p => p.status === "published").length
+        const totalViews = postsResponse.data.posts.reduce((sum, p) => sum + p.viewCount, 0)
+        const totalLikes = postsResponse.data.posts.reduce((sum, p) => sum + p.likeCount, 0)
+        const totalComments = postsResponse.data.posts.reduce((sum, p) => sum + p.commentCount, 0)
+        
+        setBlogStats({
+          totalPosts,
+          publishedPosts,
+          totalViews,
+          totalLikes,
+          totalComments,
+          avgViewsPerPost: totalPosts > 0 ? Math.round(totalViews / totalPosts) : 0,
+          avgLikesPerPost: totalPosts > 0 ? Math.round(totalLikes / totalPosts) : 0
+        })
+      }
+
+      if (categoriesResponse.success && categoriesResponse.data) {
+        setCategories(categoriesResponse.data.categories)
+      }
+
+    } catch (error) {
+      console.error("Error fetching blog data:", error)
+      toast.error("Failed to load blog data")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const filteredPosts = posts.filter((post) => {
     // Filter by search query
-    if (searchQuery) {
-      posts = searchBlogPosts(searchQuery)
+    if (searchQuery && !post.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false
     }
 
     // Filter by category
-    if (selectedCategory !== "all") {
-      posts = posts.filter((post) => post.category === selectedCategory)
+    if (selectedCategory !== "all" && post.category.name !== selectedCategory) {
+      return false
     }
 
     // Filter by status
-    if (selectedStatus !== "all") {
-      posts = posts.filter((post) => post.status === selectedStatus)
+    if (selectedStatus !== "all" && post.status !== selectedStatus) {
+      return false
     }
 
-    setFilteredPosts(posts)
-  }, [searchQuery, selectedCategory, selectedStatus])
+    return true
+  })
 
   if (isLoading || !isAuthenticated || user?.role !== "university") {
     return (
@@ -84,7 +136,6 @@ export default function AdminBlogPage() {
     )
   }
 
-  const blogStats = getBlogStats()
 
   const getStatusBadge = (status: BlogPost["status"]) => {
     const variants = {
@@ -222,7 +273,7 @@ export default function AdminBlogPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      {blogCategories.map((category) => (
+                      {categories.map((category) => (
                         <SelectItem key={category.id} value={category.name}>
                           {category.name}
                         </SelectItem>
@@ -274,20 +325,20 @@ export default function AdminBlogPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{post.category}</Badge>
+                            <Badge variant="outline">{post.category.name}</Badge>
                           </TableCell>
                           <TableCell>{getStatusBadge(post.status)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <Eye className="w-4 h-4 text-gray-400" />
-                              <span>{post.views.toLocaleString()}</span>
+                              <span>{post.viewCount.toLocaleString()}</span>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-1">
                                 <Heart className="w-4 h-4 text-red-400" />
-                                <span className="text-sm">{post.likes}</span>
+                                <span className="text-sm">{post.likeCount}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MessageSquare className="w-4 h-4 text-blue-400" />
@@ -298,7 +349,7 @@ export default function AdminBlogPage() {
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm">{formatDate(post.date)}</span>
+                              <span className="text-sm">{formatDate(post.publishedAt)}</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
@@ -379,14 +430,14 @@ export default function AdminBlogPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {mockUniversityBlogPosts
-                      .sort((a, b) => b.views - a.views)
+                    {posts
+                      .sort((a, b) => b.viewCount - a.viewCount)
                       .slice(0, 3)
                       .map((post) => (
                         <div key={post.id} className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="text-sm font-medium line-clamp-2">{post.title}</p>
-                            <p className="text-xs text-gray-500">{post.views} views</p>
+                            <p className="text-xs text-gray-500">{post.viewCount} views</p>
                           </div>
                         </div>
                       ))}
@@ -425,21 +476,24 @@ export default function AdminBlogPage() {
 
           <TabsContent value="categories" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {blogCategories.map((category) => (
-                <Card key={category.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }} />
-                      <Badge variant="outline">{category.count} posts</Badge>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{category.description}</p>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Manage Category
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {categories.map((category) => {
+                const categoryPostCount = posts.filter(p => p.category.id === category.id).length
+                return (
+                  <Card key={category.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-4 h-4 rounded-full bg-blue-500" />
+                        <Badge variant="outline">{categoryPostCount} posts</Badge>
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
+                      <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Manage Category
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           </TabsContent>
         </Tabs>

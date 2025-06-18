@@ -17,7 +17,8 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Save, Eye, Calendar, Upload, X, Plus, ArrowLeft, FileText, ImageIcon, Tag, Globe } from "lucide-react"
 import Link from "next/link"
-import { blogCategories } from "@/data/mock-blog-management"
+import { blogApi } from "@/lib/api/blog"
+import type { BlogCategory } from "@/lib/api/types"
 import { toast } from "sonner"
 
 export default function CreateBlogPage() {
@@ -44,14 +45,29 @@ export default function CreateBlogPage() {
   const [newTag, setNewTag] = useState("")
   const [wordCount, setWordCount] = useState(0)
   const [readTime, setReadTime] = useState(0)
+  const [categories, setCategories] = useState<BlogCategory[]>([])
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "university") {
       router.push("/auth/sign-in")
     } else {
-      setIsLoading(false)
+      fetchCategories()
     }
   }, [isAuthenticated, user, router])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await blogApi.listCategories()
+      if (response.success && response.data) {
+        setCategories(response.data.categories)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error)
+      toast.error("Failed to load categories")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     // Calculate word count and read time
@@ -91,41 +107,38 @@ export default function CreateBlogPage() {
     setIsSaving(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      const selectedCategory = categories.find(c => c.name === formData.category)
+      
       const postData = {
-        ...formData,
+        title: formData.title,
+        content: formData.content,
+        excerpt: formData.excerpt,
+        categoryId: selectedCategory?.id || categories[0]?.id,
+        tags: formData.tags,
         status,
-        author: `${user?.profile?.firstName} ${user?.profile?.lastName}`,
-        authorId: user?.id,
-        universityId: user?.profile?.universityId || "aau-001",
-        universityName: user?.profile?.collegeName || "University",
-        date: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        slug: formData.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, ""),
-        views: 0,
-        likes: 0,
-        commentCount: 0,
-        readTime,
+        featured: formData.featured,
+        image: formData.image,
+        publishedAt: status === "scheduled" ? formData.scheduledDate : new Date().toISOString(),
+        metaTitle: formData.seoTitle,
+        metaDescription: formData.seoDescription,
       }
 
-      console.log("Saving blog post:", postData)
+      const response = await blogApi.createPost(postData)
 
-      toast.success(
-        status === "published"
-          ? "Blog post published successfully!"
-          : status === "scheduled"
-            ? "Blog post scheduled successfully!"
-            : "Blog post saved as draft!",
-      )
-
-      router.push("/admin/blog")
+      if (response.success) {
+        toast.success(
+          status === "published"
+            ? "Blog post published successfully!"
+            : status === "scheduled"
+              ? "Blog post scheduled successfully!"
+              : "Blog post saved as draft!",
+        )
+        router.push("/admin/blog")
+      } else {
+        throw new Error("Failed to create post")
+      }
     } catch (error) {
+      console.error("Error saving blog post:", error)
       toast.error("Failed to save blog post. Please try again.")
     } finally {
       setIsSaving(false)
@@ -366,7 +379,7 @@ export default function CreateBlogPage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {blogCategories.map((category) => (
+                    {categories.map((category) => (
                       <SelectItem key={category.id} value={category.name}>
                         {category.name}
                       </SelectItem>

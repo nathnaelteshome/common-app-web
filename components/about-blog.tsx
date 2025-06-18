@@ -1,13 +1,45 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, MessageCircle, ArrowRight } from "lucide-react"
+import { Calendar, MessageCircle, ArrowRight, Clock } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { getFeaturedPosts } from "@/data/blog-data"
-
-const blogPosts = getFeaturedPosts()
+import { blogApi } from "@/lib/api/blog"
+import type { BlogPost } from "@/lib/api/types"
 
 export function AboutBlog() {
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await blogApi.getFeaturedPosts({ limit: 6 })
+        if (response.success && response.data) {
+          setPosts(response.data.posts)
+        }
+      } catch (error) {
+        console.error("Error fetching featured posts:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center">Loading blog posts...</div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="container mx-auto">
@@ -18,15 +50,17 @@ export function AboutBlog() {
             </div>
             <h2 className="text-4xl font-bold text-primary font-sora">Most Popular Post.</h2>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 text-white hidden sm:flex">
-            All Blog Post
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+          <Link href="/blog">
+            <Button className="bg-primary hover:bg-primary/90 text-white hidden sm:flex">
+              All Blog Post
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
-            <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+          {posts.map((post) => (
+            <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <Image
                 src={post.image || "/placeholder.svg"}
                 alt={post.title}
@@ -38,12 +72,22 @@ export function AboutBlog() {
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>{post.date}</span>
+                    <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageCircle className="w-4 h-4" />
-                    <span>Comment ({post.comments})</span>
+                    <span>Comment ({post.commentCount})</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{post.readTime} min read</span>
+                  </div>
+                </div>
+
+                <div className="mb-2">
+                  <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                    {post.category.name}
+                  </span>
                 </div>
 
                 <h3 className="font-semibold text-gray-800 mb-4 line-clamp-3">{post.title}</h3>
@@ -60,10 +104,12 @@ export function AboutBlog() {
         </div>
 
         <div className="sm:hidden mt-8 text-center">
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            All Blog Post
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+          <Link href="/blog">
+            <Button className="bg-primary hover:bg-primary/90 text-white">
+              All Blog Post
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

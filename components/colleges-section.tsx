@@ -144,7 +144,6 @@ export function CollegesSection() {
                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-yellow-400 border-2 border-white"></div>
                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-purple-400 border-2 border-white"></div>
                   </div>
-                  <span className="text-xs md:text-sm text-gray-600">Enrolled</span>
                   <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm" asChild>
                     <Link href={`/universities/${university.slug}`}>
                       View Details

@@ -1,6 +1,6 @@
-import { Calendar, MessageCircle, Clock } from "lucide-react"
+import { Calendar, MessageCircle, Clock, Eye } from "lucide-react"
 import Image from "next/image"
-import type { BlogPost as BlogPostType } from "@/data/blog-data"
+import type { BlogPost as BlogPostType } from "@/lib/api/types"
 
 interface BlogPostProps {
   post: BlogPostType
@@ -18,10 +18,20 @@ export function BlogPost({ post }: BlogPostProps) {
       />
 
       <div className="p-6 md:p-8">
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+        <div className="mb-4">
+          <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            {post.category.name}
+          </span>
+        </div>
+
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 leading-tight">{post.title}</h1>
+
+        <p className="text-lg text-gray-600 mb-6 leading-relaxed">{post.excerpt}</p>
+
+        <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
-            <span>{post.date}</span>
+            <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center gap-1">
             <MessageCircle className="w-4 h-4" />
@@ -31,17 +41,16 @@ export function BlogPost({ post }: BlogPostProps) {
             <Clock className="w-4 h-4" />
             <span>{post.readTime} min read</span>
           </div>
+          <div className="flex items-center gap-1">
+            <Eye className="w-4 h-4" />
+            <span>{post.viewCount} views</span>
+          </div>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 leading-tight">{post.title}</h1>
-
-        <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed">
-          {post.content.split("\n\n").map((paragraph, index) => (
-            <p key={index} className="mb-4">
-              {paragraph}
-            </p>
-          ))}
-        </div>
+        <div 
+          className="prose prose-lg max-w-none text-gray-600 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         <div className="mt-8 pt-6 border-t border-gray-200">
           <div className="flex items-center justify-between">

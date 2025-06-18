@@ -25,6 +25,7 @@ export default function CollegesPage() {
   // Memoize search parameters to prevent unnecessary re-renders
   const searchQuery = useMemo(() => searchParams.get("search"), [searchParams])
   const category = useMemo(() => searchParams.get("category"), [searchParams])
+  const programType = useMemo(() => searchParams.get("programType"), [searchParams])
   
   // Initialize universities data
   useEffect(() => {
@@ -62,8 +63,14 @@ export default function CollegesPage() {
         if (response.success && response.data) {
           let universities = response.data.universities || []
           
+          // Apply client-side filtering for program type if specified
+          if (programType) {
+            universities = universities.filter(university => 
+              university.programs?.some(program => program.type === programType)
+            )
+          }
           
-        console.log("universities response 2",universities)
+          console.log("universities response 2",universities)
           // Apply client-side sorting if sorting by applicants (since API doesn't support it)
           if (sortField === 'applicants') {
             universities = [...universities].sort((a, b) => {
@@ -88,7 +95,7 @@ export default function CollegesPage() {
     }
     
     fetchUniversities()
-  }, [searchQuery, category, sortBy])
+  }, [searchQuery, category, programType, sortBy])
   
   const handleSearch = async (filters: any, searchResults?: University[]) => {
     if (searchResults) {
@@ -111,9 +118,8 @@ export default function CollegesPage() {
         params.search = filters.query
       }
 
-      if (filters.location) {
-        params.city = filters.location
-      }
+      // Note: Location filtering is now handled client-side in enhanced-search component
+      // since our UI uses regions but API expects cities
 
       if (filters.universityType) {
         // Map frontend type to backend type
@@ -135,6 +141,35 @@ export default function CollegesPage() {
       
       if (response.success && response.data) {
         let universities = response.data.universities || []
+        
+        // Apply client-side filtering for location (since we use regions but API expects cities)
+        if (filters.location && filters.location !== "all") {
+          universities = universities.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            
+            const locationMatch = 
+              profile.address?.region?.toLowerCase().includes(filters.location.toLowerCase()) ||
+              profile.address?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+              profile.location?.toLowerCase().includes(filters.location.toLowerCase())
+            
+            return locationMatch
+          })
+        }
+
+        // Apply client-side filtering for program type
+        if (filters.programType && filters.programType !== "all") {
+          universities = universities.filter((university) =>
+            university.programs?.some((program) => program.type === filters.programType)
+          )
+        }
+
+        // Apply client-side filtering for degree type
+        if (filters.degreeType && filters.degreeType !== "all") {
+          universities = universities.filter((university) =>
+            university.programs?.some((program) => program.degree === filters.degreeType)
+          )
+        }
         
         // Apply client-side sorting if sorting by applicants (since API doesn't support it)
         if (sortField === 'applicants') {
@@ -212,12 +247,16 @@ export default function CollegesPage() {
       <div className="bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           {/* Show category filter info if active */}
-          {category && (
+          {(category || programType) && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-blue-900">Browsing: {category}</h3>
-                  <p className="text-blue-700">Showing universities with programs in {category}</p>
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Browsing: {category || programType}
+                  </h3>
+                  <p className="text-blue-700">
+                    Showing universities with programs in {category || programType}
+                  </p>
                 </div>
                 <button
                   onClick={handleClearFilters}
@@ -248,7 +287,7 @@ export default function CollegesPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h2 className="text-2xl font-bold text-primary">
                   Universities & Colleges
-                  {category && <span className="text-lg font-normal text-gray-600 ml-2">- {category}</span>}
+                  {(category || programType) && <span className="text-lg font-normal text-gray-600 ml-2">- {category || programType}</span>}
                 </h2>
                 <UniversitySort sortBy={sortBy} onSortChange={handleSortChange} />
               </div>

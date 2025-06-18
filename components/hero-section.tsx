@@ -1,23 +1,32 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ArrowRight, Search, Users, GraduationCap, Award, CheckCircle } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  ArrowRight,
+  Search,
+  Users,
+  GraduationCap,
+  Award,
+  CheckCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function HeroSection() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/colleges?search=${encodeURIComponent(searchQuery.trim())}`
+      window.location.href = `/colleges?search=${encodeURIComponent(
+        searchQuery.trim()
+      )}`;
     }
-  }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
@@ -61,13 +70,17 @@ export function HeroSection() {
                 <span className="text-gray-800">Ethiopian Universities</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
-                Streamline your university application process with our comprehensive platform. Apply to multiple
-                universities, track your progress, and secure your future in higher education.
+                Streamline your university application process with our
+                comprehensive platform. Apply to multiple universities, track
+                your progress, and secure your future in higher education.
               </p>
             </div>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto lg:mx-0">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto lg:mx-0"
+            >
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
@@ -110,15 +123,23 @@ export function HeroSection() {
             {/* Success Metrics */}
             <div className="grid grid-cols-3 gap-6 pt-8">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">50K+</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
+                  50K+
+                </div>
                 <div className="text-sm text-gray-600">Students Helped</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">200+</div>
-                <div className="text-sm text-gray-600">Partner Universities</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
+                  200+
+                </div>
+                <div className="text-sm text-gray-600">
+                  Partner Universities
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">92%</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">
+                  92%
+                </div>
                 <div className="text-sm text-gray-600">Success Rate</div>
               </div>
             </div>
@@ -128,7 +149,7 @@ export function HeroSection() {
           <div className="relative">
             <div className="relative z-10">
               <Image
-                src="/placeholder.svg?height=600&width=600"
+                src="/images/landing.jpg"
                 alt="Ethiopian students celebrating graduation"
                 width={600}
                 height={600}
@@ -141,8 +162,12 @@ export function HeroSection() {
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-8 h-8 text-green-500" />
                   <div>
-                    <div className="font-semibold text-gray-800">Application Approved!</div>
-                    <div className="text-sm text-gray-600">Addis Ababa University</div>
+                    <div className="font-semibold text-gray-800">
+                      Application Approved!
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Addis Ababa University
+                    </div>
                   </div>
                 </div>
               </div>
@@ -151,8 +176,12 @@ export function HeroSection() {
                 <div className="flex items-center gap-3">
                   <Users className="w-8 h-8 text-blue-500" />
                   <div>
-                    <div className="font-semibold text-gray-800">1,247 Students</div>
-                    <div className="text-sm text-gray-600">Applied This Month</div>
+                    <div className="font-semibold text-gray-800">
+                      1,247 Students
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Applied This Month
+                    </div>
                   </div>
                 </div>
               </div>
@@ -164,5 +193,5 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

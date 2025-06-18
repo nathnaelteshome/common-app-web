@@ -1,15 +1,16 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Target, Eye, Heart, TrendingUp } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, Target, Eye, Heart, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function AboutSection() {
   const values = [
     {
       icon: Target,
       title: "Excellence",
-      description: "We strive for excellence in everything we do, ensuring the highest quality service for our users.",
+      description:
+        "We strive for excellence in everything we do, ensuring the highest quality service for our users.",
     },
     {
       icon: Eye,
@@ -26,9 +27,10 @@ export function AboutSection() {
     {
       icon: TrendingUp,
       title: "Innovation",
-      description: "Continuously innovating to improve the university application experience through technology.",
+      description:
+        "Continuously innovating to improve the university application experience through technology.",
     },
-  ]
+  ];
 
   return (
     <section className="py-24 px-4 bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 relative overflow-hidden">
@@ -53,26 +55,36 @@ export function AboutSection() {
               </h2>
 
               <p className="text-lg text-gray-600 leading-relaxed">
-                CommonApply is revolutionizing how Ethiopian students access higher education opportunities. Our
-                comprehensive digital platform streamlines the university application process, making it easier, faster,
-                and more transparent for students across the country.
+                CommonApply is revolutionizing how Ethiopian students access
+                higher education opportunities. Our comprehensive digital
+                platform streamlines the university application process, making
+                it easier, faster, and more transparent for students across the
+                country.
               </p>
 
               <p className="text-base text-gray-600 leading-relaxed">
-                Founded with the vision of bridging the gap between talented students and quality education, we've
-                helped thousands of students navigate their path to university admission. Our platform connects students
-                with over 200 universities and educational institutions across Ethiopia.
+                Founded with the vision of bridging the gap between talented
+                students and quality education, we've helped thousands of
+                students navigate their path to university admission. Our
+                platform connects students with over 200 universities and
+                educational institutions across Ethiopia.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100">
-                <div className="text-3xl font-bold text-primary mb-2">50,000+</div>
-                <div className="text-sm text-gray-600 font-medium">Students Served</div>
+                <div className="text-3xl font-bold text-primary mb-2">
+                  50,000+
+                </div>
+                <div className="text-sm text-gray-600 font-medium">
+                  Students Served
+                </div>
               </div>
               <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100">
                 <div className="text-3xl font-bold text-primary mb-2">200+</div>
-                <div className="text-sm text-gray-600 font-medium">Partner Universities</div>
+                <div className="text-sm text-gray-600 font-medium">
+                  Partner Universities
+                </div>
               </div>
             </div>
 
@@ -91,7 +103,7 @@ export function AboutSection() {
           <div className="relative">
             <div className="relative z-10">
               <Image
-                src="/placeholder.svg?height=500&width=600"
+                src="/images/students.jpg?height=500&width=600"
                 alt="Ethiopian university campus"
                 width={600}
                 height={500}
@@ -105,9 +117,12 @@ export function AboutSection() {
         {/* Values Section */}
         <div className="space-y-12">
           <div className="text-center space-y-4">
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-800">Our Core Values</h3>
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-800">
+              Our Core Values
+            </h3>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              These fundamental principles guide everything we do and shape our commitment to Ethiopian students.
+              These fundamental principles guide everything we do and shape our
+              commitment to Ethiopian students.
             </p>
           </div>
 
@@ -124,7 +139,9 @@ export function AboutSection() {
                   <h4 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors duration-300">
                     {value.title}
                   </h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">{value.description}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {value.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -132,5 +149,5 @@ export function AboutSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

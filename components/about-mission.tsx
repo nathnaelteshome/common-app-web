@@ -1,5 +1,5 @@
-import Image from "next/image"
-import { Target, Eye, Heart, Users } from "lucide-react"
+import Image from "next/image";
+import { Target, Eye, Heart, Users } from "lucide-react";
 
 const values = [
   {
@@ -26,7 +26,7 @@ const values = [
     description:
       "Since 2018, we've helped over 50,000 Ethiopian students secure admission to universities, with 92% of our users successfully enrolling in their preferred programs.",
   },
-]
+];
 
 export function AboutMission() {
   return (
@@ -98,9 +98,10 @@ export function AboutMission() {
               </h2>
 
               <p className="text-lg text-gray-600 leading-relaxed">
-                Founded in 2018 by a team of Ethiopian educators and technology experts, CommonApply was born from a
-                simple yet powerful vision: every Ethiopian student should have equal access to quality higher education
-                opportunities.
+                Founded in 2018 by a team of Ethiopian educators and technology
+                experts, CommonApply was born from a simple yet powerful vision:
+                every Ethiopian student should have equal access to quality
+                higher education opportunities.
               </p>
             </div>
 
@@ -115,7 +116,9 @@ export function AboutMission() {
                       <h3 className="font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors duration-300">
                         {value.title}
                       </h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">{value.description}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {value.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -125,5 +128,5 @@ export function AboutMission() {
         </div>
       </div>
     </section>
-  )
+  );
 }

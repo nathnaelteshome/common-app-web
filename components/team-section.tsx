@@ -1,52 +1,52 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Linkedin, Github, Twitter } from "lucide-react"
-import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Linkedin, Github, Twitter } from "lucide-react";
+import Image from "next/image";
 
 const teamMembers = [
   {
     name: "ZUFAN ELIAS",
     role: "UI/UX Designer",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/images/zufe.jpg?height=400&width=400",
     bio: "Creative designer with 5+ years of experience in user-centered design and digital innovation.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
   {
     name: "NEBIYU DANIEL",
     role: "CEO And Fullstack Developer",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/images/neba.jpg?height=400&width=400",
     bio: "Visionary leader driving educational technology transformation across Ethiopia.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
   {
     name: "TAMERAT MISBA",
-    role: "CTO And Back-End Developer",
-    image: "/placeholder.svg?height=400&width=400",
+    role: "CEO And Back-End Developer",
+    image: "/images/tame.jpg?height=400&width=400",
     bio: "Technical architect specializing in scalable systems and cloud infrastructure.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
   {
     name: "NATNAEL TESHOME",
     role: "Fullstack Developer",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/images/nati.jpg?height=400&width=400",
     bio: "Full-stack engineer passionate about creating seamless user experiences.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
   {
     name: "ABEL MULUBIRHAN",
     role: "Front-End Developer",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/images/abela.jpg?height=400&width=400",
     bio: "Frontend specialist crafting beautiful and responsive web applications.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
   {
     name: "HAILEYESUS ABRHAM",
     role: "Back-End Developer",
-    image: "/placeholder.svg?height=400&width=400",
+    image: "/images/haile.jpg?height=400&width=400",
     bio: "Backend developer focused on robust APIs and database optimization.",
     social: { linkedin: "#", twitter: "#", github: "#" },
   },
-]
+];
 
 export function TeamSection() {
   return (
@@ -71,24 +71,37 @@ export function TeamSection() {
           </h2>
 
           <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8">
-            Our diverse team of passionate professionals is dedicated to revolutionizing education access in Ethiopia.
-            With combined expertise in technology, design, and education, we're building the future of university
-            applications.
+            Our diverse team of passionate professionals is dedicated to
+            revolutionizing education access in Ethiopia. With combined
+            expertise in technology, design, and education, we're building the
+            future of university applications.
           </p>
 
           {/* Team Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto mb-12">
             <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">50+</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Years Combined Experience</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                50+
+              </div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">
+                Years Combined Experience
+              </div>
             </div>
             <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">15+</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Projects Delivered</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                15+
+              </div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">
+                Projects Delivered
+              </div>
             </div>
             <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">24/7</div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">Support Available</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                24/7
+              </div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">
+                Support Available
+              </div>
             </div>
           </div>
         </div>
@@ -146,13 +159,17 @@ export function TeamSection() {
                     <p className="text-primary font-semibold text-sm uppercase tracking-wide mb-3 bg-primary/10 px-3 py-1 rounded-full inline-block">
                       {member.role}
                     </p>
-                    <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {member.bio}
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-gray-500 font-medium">Available</span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        Available
+                      </span>
                     </div>
                     <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0" />
                   </div>
@@ -171,5 +188,5 @@ export function TeamSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Star, MapPin, Users, BookOpen, ArrowRight } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Star, MapPin, Users, BookOpen, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const colleges = [
   {
@@ -11,7 +11,7 @@ const colleges = [
     rating: 5.0,
     fields: 200,
     students: "25,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/aait.jpg",
     slug: "addis-ababa-institute-technology",
   },
   {
@@ -20,7 +20,7 @@ const colleges = [
     rating: 4.5,
     fields: 180,
     students: "32,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/mekele.jpg",
     slug: "mekelle-university",
   },
   {
@@ -29,7 +29,7 @@ const colleges = [
     rating: 4.5,
     fields: 150,
     students: "28,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/gondar.jpg?height=200&width=300",
     slug: "gonder-university",
   },
   {
@@ -38,7 +38,7 @@ const colleges = [
     rating: 4.5,
     fields: 170,
     students: "30,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/jimma.jpg?height=200&width=300",
     slug: "jimma-university",
   },
   {
@@ -47,7 +47,7 @@ const colleges = [
     rating: 4.5,
     fields: 160,
     students: "26,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/bahir.jpg?height=200&width=300",
     slug: "bahirdar-university",
   },
   {
@@ -56,10 +56,10 @@ const colleges = [
     rating: 4.5,
     fields: 120,
     students: "18,000+",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/aksum.jpg?height=200&width=300",
     slug: "aksum-university",
   },
-]
+];
 
 export function CollegesSection() {
   return (
@@ -73,12 +73,16 @@ export function CollegesSection() {
             <h2 className="text-2xl md:text-4xl font-bold text-primary font-sora">
               If You Are A{" "}
               <span className="relative">
-                Student<span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"></span>
+                Student
+                <span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200 -z-10"></span>
               </span>{" "}
               You Can Apply With Us.
             </h2>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 text-white hidden lg:flex" asChild>
+          <Button
+            className="bg-primary hover:bg-primary/90 text-white hidden lg:flex"
+            asChild
+          >
             <Link href="/colleges">
               See More
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -112,11 +116,15 @@ export function CollegesSection() {
                     <Star
                       key={i}
                       className={`w-3 h-3 md:w-4 md:h-4 ${
-                        i < Math.floor(college.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                        i < Math.floor(college.rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                   ))}
-                  <span className="text-xs md:text-sm text-gray-600 ml-1">{college.rating}k</span>
+                  <span className="text-xs md:text-sm text-gray-600 ml-1">
+                    {college.rating}k
+                  </span>
                 </div>
 
                 <h3 className="font-bold text-gray-800 mb-3 md:mb-4 text-xs md:text-sm leading-tight">
@@ -143,8 +151,14 @@ export function CollegesSection() {
                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-yellow-400 border-2 border-white"></div>
                     <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-purple-400 border-2 border-white"></div>
                   </div>
-                  <span className="text-xs md:text-sm text-gray-600">Enrolled</span>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm" asChild>
+                  <span className="text-xs md:text-sm text-gray-600">
+                    Enrolled
+                  </span>
+                  <Button
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm"
+                    asChild
+                  >
                     <Link href={`/universities/${college.slug}`}>
                       View Details
                       <ArrowRight className="ml-1 w-3 h-3" />
@@ -166,5 +180,5 @@ export function CollegesSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

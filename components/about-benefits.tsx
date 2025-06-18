@@ -96,7 +96,7 @@ export function AboutBenefits() {
 
           <div className="relative">
             <Image
-              src="/placeholder.svg?height=500&width=700"
+              src="https://i.pinimg.com/736x/e6/02/e2/e602e2f5d241030f33f8e34bb075f176.jpg"
               alt="Students learning in modern environment"
               width={700}
               height={500}

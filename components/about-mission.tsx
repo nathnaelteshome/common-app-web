@@ -37,14 +37,14 @@ export function AboutMission() {
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-6">
                 <Image
-                  src="/placeholder.svg?height=280&width=240"
+                  src="https://i.pinimg.com/736x/94/29/c5/9429c5627be4896999132398e29f001e.jpg"
                   alt="Student with tablet"
                   width={240}
                   height={280}
                   className="rounded-2xl shadow-lg w-full"
                 />
                 <Image
-                  src="/placeholder.svg?height=200&width=240"
+                  src="https://i.pinimg.com/736x/e6/02/e2/e602e2f5d241030f33f8e34bb075f176.jpg"
                   alt="Graduation ceremony"
                   width={240}
                   height={200}
@@ -53,14 +53,14 @@ export function AboutMission() {
               </div>
               <div className="space-y-6 mt-8">
                 <Image
-                  src="/placeholder.svg?height=200&width=240"
+                  src="https://i.pinimg.com/736x/75/b6/02/75b60209d12ba9453cb3e5b548fb9d30.jpg"
                   alt="Group of students"
                   width={240}
                   height={200}
                   className="rounded-2xl shadow-lg w-full"
                 />
                 <Image
-                  src="/placeholder.svg?height=280&width=240"
+                  src="https://i.pinimg.com/736x/a6/c1/58/a6c158f11a8a242af2cc370c460967d4.jpg"
                   alt="University building"
                   width={240}
                   height={280}

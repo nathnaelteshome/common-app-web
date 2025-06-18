@@ -128,7 +128,7 @@ export function HeroSection() {
           <div className="relative">
             <div className="relative z-10">
               <Image
-                src="/placeholder.svg?height=600&width=600"
+                src="https://i.pinimg.com/736x/99/a2/94/99a2944ec7a7fb847091c8e33829ac3b.jpg"
                 alt="Ethiopian students celebrating graduation"
                 width={600}
                 height={600}

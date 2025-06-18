@@ -19,9 +19,9 @@ export default function HomePage() {
       <CategoriesSection />
       <CollegesSection />
       <AboutSection />
-      <VideoSection />
+      {/* <VideoSection /> */}
       <WhyChooseUsSection />
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       <TeamSection />
       <BlogSection />
       <NewsletterSection />

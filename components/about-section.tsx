@@ -91,7 +91,7 @@ export function AboutSection() {
           <div className="relative">
             <div className="relative z-10">
               <Image
-                src="/placeholder.svg?height=500&width=600"
+                src="https://i.pinimg.com/736x/60/47/9d/60479d0bb52baeac1c59dc4c4bfdbbe2.jpg"
                 alt="Ethiopian university campus"
                 width={600}
                 height={500}

@@ -13,15 +13,15 @@ const features = [
     bgColor: "bg-gradient-to-br from-yellow-50 to-orange-50",
     borderColor: "border-yellow-200",
   },
-  {
-    icon: Target,
-    title: "Smart Matching System",
-    description:
-      "Our AI-powered algorithm matches you with universities that align with your academic profile, interests, and career goals for better admission chances.",
-    color: "text-blue-600",
-    bgColor: "bg-gradient-to-br from-blue-50 to-indigo-50",
-    borderColor: "border-blue-200",
-  },
+  // {
+  //   icon: Target,
+  //   title: "Smart Matching System",
+  //   description:
+  //     "Our AI-powered algorithm matches you with universities that align with your academic profile, interests, and career goals for better admission chances.",
+  //   color: "text-blue-600",
+  //   bgColor: "bg-gradient-to-br from-blue-50 to-indigo-50",
+  //   borderColor: "border-blue-200",
+  // },
   {
     icon: Shield,
     title: "Bank-Level Security",
@@ -72,7 +72,7 @@ export function WhyChooseUsSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
             <Card
               key={index}

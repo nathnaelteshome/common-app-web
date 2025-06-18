@@ -7,9 +7,7 @@ import { CollegeHero } from "@/components/college-hero"
 import { EnhancedSearch } from "@/components/enhanced-search"
 import { UniversitySort } from "@/components/university-sort"
 import { EnhancedUniversityGrid } from "@/components/enhanced-university-grid"
-import { ProgramBrowser } from "@/components/program-browser"
 import { Footer } from "@/components/footer"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { universityApi } from "@/lib/api/universities"
 import { apiUtils } from "@/lib/api/client"
 import { toast } from "sonner"
@@ -19,7 +17,6 @@ export default function CollegesPage() {
   const searchParams = useSearchParams()
   const [universities, setUniversities] = useState<University[]>([])
   const [sortBy, setSortBy] = useState("applicants-desc")
-  const [activeTab, setActiveTab] = useState("universities")
   const [isLoading, setIsLoading] = useState(true)
   
   // Memoize search parameters to prevent unnecessary re-renders
@@ -149,9 +146,9 @@ export default function CollegesPage() {
             if (!profile) return false
             
             const locationMatch = 
-              profile.address?.region?.toLowerCase().includes(filters.location.toLowerCase()) ||
-              profile.address?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
-              profile.location?.toLowerCase().includes(filters.location.toLowerCase())
+              (typeof profile.address?.region === 'string' ? profile.address.region.toLowerCase().includes(filters.location.toLowerCase()) : false) ||
+              (typeof profile.address?.city === 'string' ? profile.address.city.toLowerCase().includes(filters.location.toLowerCase()) : false) ||
+              (typeof profile.location === 'string' ? profile.location.toLowerCase().includes(filters.location.toLowerCase()) : false)
             
             return locationMatch
           })
@@ -268,37 +265,24 @@ export default function CollegesPage() {
             </div>
           )}
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="space-y-6">
+            <EnhancedSearch
+              onSearch={handleSearch}
+              onClearFilters={handleClearFilters}
+              resultCount={universities.length}
+              searchMode="universities"
+            />
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <TabsList className="grid w-full sm:w-auto grid-cols-2">
-                <TabsTrigger value="universities">Universities</TabsTrigger>
-                <TabsTrigger value="programs">Programs</TabsTrigger>
-              </TabsList>
+              <h2 className="text-2xl font-bold text-primary">
+                Universities & Colleges
+                {(category || programType) && <span className="text-lg font-normal text-gray-600 ml-2">- {category || programType}</span>}
+              </h2>
+              <UniversitySort sortBy={sortBy} onSortChange={handleSortChange} />
             </div>
 
-            <TabsContent value="universities" className="space-y-6">
-              <EnhancedSearch
-                onSearch={handleSearch}
-                onClearFilters={handleClearFilters}
-                resultCount={universities.length}
-                searchMode="universities"
-              />
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 className="text-2xl font-bold text-primary">
-                  Universities & Colleges
-                  {(category || programType) && <span className="text-lg font-normal text-gray-600 ml-2">- {category || programType}</span>}
-                </h2>
-                <UniversitySort sortBy={sortBy} onSortChange={handleSortChange} />
-              </div>
-
-              <EnhancedUniversityGrid universities={universities} />
-            </TabsContent>
-
-            <TabsContent value="programs" className="space-y-6">
-              <ProgramBrowser />
-            </TabsContent>
-          </Tabs>
+            <EnhancedUniversityGrid universities={universities} />
+          </div>
         </div>
       </div>
       <Footer />

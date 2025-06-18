@@ -1,5 +1,18 @@
+/**
+ * Search Service for Universities and Programs
+ *
+ * This service provides high-level search functionality for the application,
+ * managing search indices and providing optimized search operations.
+ */
+
 import { SearchIndex, type SearchResult, type SearchOptions } from "./search-algorithm"
-import { type University, type Program, getUniversities } from "@/data/universities-data"
+import {
+  type University,
+  type Program,
+  getUniversities,
+  getAllPrograms,
+  getUniversitiesByCategory,
+} from "@/data/universities-data"
 
 // Extended interfaces for search
 interface SearchableUniversity extends University {
@@ -64,9 +77,50 @@ class UniversitySearchService {
    *
    * @param query - Search query
    * @param options - Search configuration
+   * @param customUniversities - Optional custom dataset to search within
    * @returns Ranked search results
    */
-  search(query: string, options: SearchOptions = {}): SearchResult<University>[] {
+  search(query: string, options: SearchOptions = {}, customUniversities?: University[]): SearchResult<University>[] {
+    // If custom universities provided, create temporary index
+    if (customUniversities) {
+      const tempIndex = new SearchIndex<SearchableUniversity>()
+      const searchableUniversities: SearchableUniversity[] = customUniversities.map((uni) => ({
+        ...uni,
+        popularity: uni.totalStudents + uni.rating * 1000,
+        keywords: [
+          uni.shortName,
+          uni.type,
+          uni.region,
+          ...uni.programs.map((p) => p.type),
+          ...uni.facilities,
+          ...uni.accreditations,
+        ],
+      }))
+      tempIndex.build(searchableUniversities)
+
+      const defaultOptions: SearchOptions = {
+        fuzzyThreshold: 2,
+        minScore: 0.1,
+        maxResults: 20,
+        boostFactors: {
+          name: 4.0,
+          type: 2.5,
+          location: 2.0,
+          description: 1.0,
+        },
+        enableFuzzy: true,
+        enablePhonetic: true,
+      }
+
+      const mergedOptions = { ...defaultOptions, ...options }
+      const results = tempIndex.search(query, mergedOptions)
+
+      return results.map((result) => ({
+        ...result,
+        item: result.item as University,
+      }))
+    }
+
     this.ensureIndexFresh()
 
     const defaultOptions: SearchOptions = {
@@ -134,20 +188,18 @@ class ProgramSearchService {
    * Builds program search index with university context
    */
   private buildIndex(): void {
-    const universities = getUniversities()
-    const searchablePrograms: SearchableProgram[] = []
-
-    universities.forEach((uni) => {
-      uni.programs.forEach((program) => {
-        searchablePrograms.push({
-          ...program,
-          popularity: program.availableSeats + uni.rating * 100,
-          universityName: uni.name,
-          location: uni.location,
-          keywords: [program.type, program.degree, uni.name, uni.shortName, uni.location, ...program.requirements],
-        })
-      })
-    })
+    const programs = getAllPrograms()
+    const searchablePrograms: SearchableProgram[] = programs.map((program) => ({
+      ...program,
+      popularity: program.availableSeats + (program.universityRating || 4.0) * 100,
+      keywords: [
+        program.type,
+        program.degree,
+        program.universityName || "",
+        program.location || "",
+        ...program.requirements,
+      ],
+    }))
 
     this.searchIndex.build(searchablePrograms)
     this.lastIndexUpdate = Date.now()
@@ -260,4 +312,51 @@ export function getSearchSuggestions(query: string): {
     universities: universitySearchService.getSuggestions(query),
     programs: programSearchService.getSuggestions(query),
   }
+}
+
+/**
+ * Advanced search with multiple filters
+ *
+ * @param filters - Search filters
+ * @returns Filtered university results
+ */
+export function advancedSearch(filters: {
+  query?: string
+  programType?: string
+  location?: string
+  universityType?: string
+  degreeType?: string
+  category?: string
+}) {
+  let results = getUniversities()
+
+  // Apply category filter first if specified
+  if (filters.category) {
+    results = getUniversitiesByCategory(filters.category)
+  }
+
+  // Apply text search if query exists
+  if (filters.query) {
+    const searchResults = universitySearchService.search(filters.query, {}, results)
+    results = searchResults.map((result) => result.item)
+  }
+
+  // Apply additional filters
+  if (filters.programType) {
+    results = results.filter((uni) => uni.programs.some((program) => program.type === filters.programType))
+  }
+
+  if (filters.location) {
+    results = results.filter((uni) => uni.region === filters.location)
+  }
+
+  if (filters.universityType) {
+    results = results.filter((uni) => uni.type === filters.universityType)
+  }
+
+  if (filters.degreeType) {
+    results = results.filter((uni) => uni.programs.some((program) => program.degree === filters.degreeType))
+  }
+
+  return results
 }

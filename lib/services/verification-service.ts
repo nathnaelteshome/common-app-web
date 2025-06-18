@@ -1,5 +1,6 @@
 import type { UniversityVerificationRequest, VerificationDecision } from "@/lib/validations/verification"
 import { mockVerificationRequests, mockVerificationNotifications } from "@/data/mock-verification-data"
+import { mockUsers, type MockUser } from "@/data/mock-data"
 
 export class VerificationService {
   private requests: Map<string, UniversityVerificationRequest> = new Map()
@@ -27,10 +28,10 @@ export class VerificationService {
 
     const verificationRequest: UniversityVerificationRequest = {
       id: requestId,
-      universityId: universityData.id,
+      universityId: universityData.id || `uni-${Date.now()}`,
       universityName: universityData.collegeName,
       adminEmail: universityData.email,
-      adminName: `${universityData.firstName} ${universityData.lastName}`,
+      adminName: `${universityData.firstName || ""} ${universityData.lastName || ""}`.trim(),
       status: "pending",
       submittedAt: new Date().toISOString(),
       documents: uploadedDocs,
@@ -43,9 +44,13 @@ export class VerificationService {
       },
       priority: this.calculatePriority(universityData),
       estimatedReviewTime: "2-3 business days",
+      universityData: universityData, // Store the full registration data
     }
 
     this.requests.set(requestId, verificationRequest)
+
+    // Create user account in pending state
+    await this.createPendingUniversityUser(universityData, requestId)
 
     // Notify system admin
     await this.sendNotification({
@@ -61,14 +66,47 @@ export class VerificationService {
     await this.sendNotification({
       type: "status_update",
       title: "Verification Request Submitted",
-      message: "Your university verification request has been submitted and is in the queue for review.",
-      recipientId: universityData.id,
+      message:
+        "Your university verification request has been submitted and is in the queue for review. You will receive an email notification once the review is complete.",
+      recipientId: verificationRequest.universityId,
       recipientRole: "university",
       verificationRequestId: requestId,
       priority: "medium",
     })
 
     return requestId
+  }
+
+  private async createPendingUniversityUser(universityData: any, verificationRequestId: string): Promise<void> {
+    // Create user account with pending verification status
+    const newUser: MockUser = {
+      id: universityData.id || `uni-${Date.now()}`,
+      email: universityData.email,
+      password: universityData.password, // In real app, this would be hashed
+      role: "university",
+      isEmailVerified: true, // Email is verified during registration
+      profile: {
+        collegeName: universityData.collegeName,
+        address1: universityData.address1,
+        address2: universityData.address2,
+        country: universityData.country,
+        city: universityData.city,
+        postcode: universityData.postcode,
+        phone1: universityData.phone1,
+        phone2: universityData.phone2,
+        documents: universityData.documents,
+        fieldOfStudies: universityData.fieldOfStudies,
+        campusImage: universityData.campusImage,
+        isVerified: false, // This is the key - not verified yet
+        verificationRequestId: verificationRequestId,
+        verificationStatus: "pending",
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // Add to mock users array (in real app, this would be saved to database)
+    mockUsers.push(newUser)
   }
 
   async updateVerificationStatus(requestId: string, decision: VerificationDecision, reviewerId: string): Promise<void> {
@@ -89,13 +127,16 @@ export class VerificationService {
 
     this.requests.set(requestId, updatedRequest)
 
+    // Update user verification status
+    await this.updateUserVerificationStatus(request.universityId, decision.decision === "approve")
+
     // Send notification to university admin
     if (decision.decision === "approve") {
       await this.sendNotification({
         type: "approval",
-        title: "Verification Approved!",
+        title: "🎉 Verification Approved!",
         message:
-          "Congratulations! Your university verification has been approved. You now have access to the admin dashboard.",
+          "Congratulations! Your university verification has been approved. You can now access your admin dashboard and start managing applications.",
         recipientId: request.universityId,
         recipientRole: "university",
         verificationRequestId: requestId,
@@ -103,7 +144,7 @@ export class VerificationService {
         actionUrl: "/admin/dashboard",
       })
 
-      // Update user permissions in the system
+      // Grant university access
       await this.grantUniversityAccess(request.universityId)
     } else {
       await this.sendNotification({
@@ -129,6 +170,34 @@ export class VerificationService {
     })
   }
 
+  private async updateUserVerificationStatus(universityId: string, isApproved: boolean): Promise<void> {
+    // Find and update the user in mock data
+    const userIndex = mockUsers.findIndex((user) => user.id === universityId)
+    if (userIndex !== -1) {
+      const user = mockUsers[userIndex]
+      if (user.role === "university" && user.profile) {
+        ;(user.profile as any).isVerified = isApproved(user.profile as any).verificationStatus = isApproved
+          ? "approved"
+          : "rejected"
+        user.updatedAt = new Date()
+        mockUsers[userIndex] = user
+      }
+    }
+  }
+
+  private async grantUniversityAccess(universityId: string): Promise<void> {
+    // In a real implementation, this would:
+    // 1. Update user permissions in database
+    // 2. Enable admin dashboard access
+    // 3. Send welcome email with login instructions
+    // 4. Create default admin settings
+
+    console.log(`Granting admin access to university: ${universityId}`)
+
+    // For now, we'll just log this action
+    // The verification status update above is what actually enables access
+  }
+
   async startReview(requestId: string, reviewerId: string): Promise<void> {
     const request = this.requests.get(requestId)
     if (!request) {
@@ -138,7 +207,7 @@ export class VerificationService {
     const updatedRequest = {
       ...request,
       status: "under_review" as const,
-      reviewedAt: new Date().toISOString(),
+      reviewStartedAt: new Date().toISOString(),
       reviewedBy: reviewerId,
     }
 
@@ -149,7 +218,7 @@ export class VerificationService {
       type: "status_update",
       title: "Verification Under Review",
       message:
-        "Your university verification request is now under review. We will contact you within the estimated review time.",
+        "Your university verification request is now under review. We will contact you within the estimated review time with our decision.",
       recipientId: request.universityId,
       recipientRole: "university",
       verificationRequestId: requestId,
@@ -227,16 +296,6 @@ export class VerificationService {
     this.requests.set(requestId, updatedRequest)
   }
 
-  private async grantUniversityAccess(universityId: string): Promise<void> {
-    // In a real implementation, this would update the user's role and permissions
-    // For now, we'll simulate this
-    console.log(`Granting admin access to university: ${universityId}`)
-
-    // Update user status in database
-    // Enable admin dashboard access
-    // Send welcome email with login instructions
-  }
-
   private async sendNotification(notificationData: any): Promise<void> {
     const notification = {
       id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -268,8 +327,13 @@ export class VerificationService {
     return "medium"
   }
 
+  // Public methods for getting data
   getVerificationRequest(requestId: string): UniversityVerificationRequest | null {
     return this.requests.get(requestId) || null
+  }
+
+  getVerificationRequestByUniversityId(universityId: string): UniversityVerificationRequest | null {
+    return Array.from(this.requests.values()).find((req) => req.universityId === universityId) || null
   }
 
   getVerificationRequests(filters?: {
@@ -345,6 +409,21 @@ export class VerificationService {
 
     const verifiedDocuments = allDocuments.filter((d) => d.status === "verified")
     return (verifiedDocuments.length / allDocuments.length) * 100
+  }
+
+  // Method to check if a university is verified
+  isUniversityVerified(universityId: string): boolean {
+    const user = mockUsers.find((u) => u.id === universityId && u.role === "university")
+    return user ? (user.profile as any)?.isVerified === true : false
+  }
+
+  // Method to get verification status for a university
+  getUniversityVerificationStatus(universityId: string): "pending" | "approved" | "rejected" | "not_found" {
+    const user = mockUsers.find((u) => u.id === universityId && u.role === "university")
+    if (!user) return "not_found"
+
+    const profile = user.profile as any
+    return profile?.verificationStatus || "pending"
   }
 }
 

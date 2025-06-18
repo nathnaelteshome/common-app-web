@@ -1,0 +1,451 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/auth-store"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Calendar,
+  TrendingUp,
+  Users,
+  MessageSquare,
+  Heart,
+  BarChart3,
+  FileText,
+  CheckCircle,
+} from "lucide-react"
+import Link from "next/link"
+import {
+  mockUniversityBlogPosts,
+  blogCategories,
+  getBlogStats,
+  searchBlogPosts,
+  type BlogPost,
+} from "@/data/mock-blog-management"
+
+export default function AdminBlogPage() {
+  const { user, isAuthenticated } = useAuthStore()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedStatus, setSelectedStatus] = useState("all")
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(mockUniversityBlogPosts)
+
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== "university") {
+      router.push("/auth/sign-in")
+    } else {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated, user, router])
+
+  useEffect(() => {
+    let posts = mockUniversityBlogPosts
+
+    // Filter by search query
+    if (searchQuery) {
+      posts = searchBlogPosts(searchQuery)
+    }
+
+    // Filter by category
+    if (selectedCategory !== "all") {
+      posts = posts.filter((post) => post.category === selectedCategory)
+    }
+
+    // Filter by status
+    if (selectedStatus !== "all") {
+      posts = posts.filter((post) => post.status === selectedStatus)
+    }
+
+    setFilteredPosts(posts)
+  }, [searchQuery, selectedCategory, selectedStatus])
+
+  if (isLoading || !isAuthenticated || user?.role !== "university") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#0a5eb2]"></div>
+      </div>
+    )
+  }
+
+  const blogStats = getBlogStats()
+
+  const getStatusBadge = (status: BlogPost["status"]) => {
+    const variants = {
+      published: "default",
+      draft: "secondary",
+      scheduled: "outline",
+      archived: "destructive",
+    } as const
+
+    const colors = {
+      published: "bg-green-100 text-green-800",
+      draft: "bg-gray-100 text-gray-800",
+      scheduled: "bg-blue-100 text-blue-800",
+      archived: "bg-red-100 text-red-800",
+    }
+
+    return <Badge className={colors[status]}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Blog Management</h1>
+              <p className="text-gray-600">Create, manage, and publish blog posts for your university</p>
+            </div>
+            <Button className="bg-[#0a5eb2] hover:bg-[#0a5eb2]/90" asChild>
+              <Link href="/admin/blog/create">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Post
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Posts</p>
+                  <p className="text-3xl font-bold text-gray-900">{blogStats.totalPosts}</p>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Published</p>
+                  <p className="text-3xl font-bold text-green-600">{blogStats.publishedPosts}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Views</p>
+                  <p className="text-3xl font-bold text-purple-600">{blogStats.totalViews.toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-full">
+                  <Eye className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Engagement</p>
+                  <p className="text-3xl font-bold text-orange-600">{blogStats.totalLikes + blogStats.totalComments}</p>
+                </div>
+                <div className="p-3 bg-orange-100 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="posts" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="posts">All Posts</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="posts" className="space-y-6">
+            {/* Filters */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Search posts..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {blogCategories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Posts Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Blog Posts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Views</TableHead>
+                        <TableHead>Engagement</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPosts.map((post) => (
+                        <TableRow key={post.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-gray-900">{post.title}</p>
+                              <p className="text-sm text-gray-500 line-clamp-1">{post.excerpt}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{post.category}</Badge>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(post.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Eye className="w-4 h-4 text-gray-400" />
+                              <span>{post.views.toLocaleString()}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1">
+                                <Heart className="w-4 h-4 text-red-400" />
+                                <span className="text-sm">{post.likes}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="w-4 h-4 text-blue-400" />
+                                <span className="text-sm">{post.commentCount}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm">{formatDate(post.date)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/blog/${post.slug}`}>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    View Post
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/blog/${post.id}/edit`}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/blog/${post.id}/analytics`}>
+                                    <BarChart3 className="w-4 h-4 mr-2" />
+                                    Analytics
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-red-600">
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Performance Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Avg. Views per Post</span>
+                      <span className="font-semibold">{blogStats.avgViewsPerPost}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Avg. Likes per Post</span>
+                      <span className="font-semibold">{blogStats.avgLikesPerPost}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Comments</span>
+                      <span className="font-semibold">{blogStats.totalComments}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Top Performing Posts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {mockUniversityBlogPosts
+                      .sort((a, b) => b.views - a.views)
+                      .slice(0, 3)
+                      .map((post) => (
+                        <div key={post.id} className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium line-clamp-2">{post.title}</p>
+                            <p className="text-xs text-gray-500">{post.views} views</p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Engagement Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Likes</span>
+                      <span className="font-semibold text-red-600">{blogStats.totalLikes}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Total Comments</span>
+                      <span className="font-semibold text-blue-600">{blogStats.totalComments}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Engagement Rate</span>
+                      <span className="font-semibold text-green-600">
+                        {(((blogStats.totalLikes + blogStats.totalComments) / blogStats.totalViews) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {blogCategories.map((category) => (
+                <Card key={category.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }} />
+                      <Badge variant="outline">{category.count} posts</Badge>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
+                    <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Manage Category
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <Footer />
+    </div>
+  )
+}

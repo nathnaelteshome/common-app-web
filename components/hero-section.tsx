@@ -1,76 +1,168 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowRight, Search, Users, GraduationCap, Award, CheckCircle } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 export function HeroSection() {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      window.location.href = `/colleges?search=${encodeURIComponent(searchQuery.trim())}`
+    }
+  }
+
   return (
-    <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-8 md:py-16 px-4 relative overflow-hidden">
-      <div className="container mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
-          <div className="space-y-4 md:space-y-6 text-center lg:text-left">
-            <div className="inline-block bg-blue-100 text-blue-800 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium">
-              WELCOME TO COMMON APPLY
-            </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Gradient Orbs */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-primary leading-tight font-sora">
-              Achieving Your Dreams Through Education
-            </h1>
-
-            <p className="text-gray-600 text-base md:text-lg">You are at the right place</p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-6 md:px-8 py-3 text-base md:text-lg w-full sm:w-auto">
-                Start Your Application Now!
-                <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
-              </Button>
-
-              {/* Decorative arrow - hidden on mobile */}
-              <div className="hidden xl:block">
-                <svg width="120" height="60" viewBox="0 0 120 60" className="text-blue-400">
-                  <path
-                    d="M10 30 Q 60 10, 110 30"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeDasharray="5,5"
-                  />
-                  <path d="M105 25 L110 30 L105 35" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 pt-4 md:pt-8 justify-center lg:justify-start">
-              <div className="flex items-center">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-400 border-2 border-white"></div>
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-400 border-2 border-white"></div>
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-yellow-400 border-2 border-white"></div>
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-400 border-2 border-white flex items-center justify-center text-white text-xs md:text-sm font-bold">
-                    +
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm md:text-base">200+ Students</p>
-              </div>
-            </div>
+        {/* Floating Elements */}
+        <div className="absolute top-32 right-20 animate-float">
+          <div className="w-16 h-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center">
+            <GraduationCap className="w-8 h-8 text-primary" />
           </div>
-
-          <div className="relative mt-8 lg:mt-0">
-            <Image
-              src="/placeholder.svg?height=400&width=500&query=graduation ceremony with students in caps and gowns celebrating"
-              alt="Graduation ceremony"
-              width={500}
-              height={400}
-              className="rounded-lg shadow-2xl w-full h-auto"
-            />
+        </div>
+        <div className="absolute bottom-32 left-20 animate-float delay-500">
+          <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center">
+            <Award className="w-10 h-10 text-blue-600" />
           </div>
         </div>
       </div>
 
-      {/* Background decorations */}
-      <div className="absolute top-10 md:top-20 right-10 md:right-20 w-16 h-16 md:w-20 md:h-20 bg-blue-200 rounded-full opacity-20"></div>
-      <div className="absolute bottom-10 md:bottom-20 left-10 md:left-20 w-12 h-12 md:w-16 md:h-16 bg-purple-200 rounded-full opacity-20"></div>
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left Content */}
+          <div className="space-y-8 text-center lg:text-left">
+            {/* Badge */}
+            <div className="inline-flex items-center bg-gradient-to-r from-primary/10 to-blue-500/10 text-primary px-6 py-3 rounded-full text-sm font-semibold shadow-sm border border-primary/10">
+              <span className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></span>
+              #1 University Application Platform in Ethiopia
+            </div>
+
+            {/* Main Heading */}
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span className="bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Your Gateway to
+                </span>
+                <br />
+                <span className="text-gray-800">Ethiopian Universities</span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
+                Streamline your university application process with our comprehensive platform. Apply to multiple
+                universities, track your progress, and secure your future in higher education.
+              </p>
+            </div>
+
+            {/* Search Bar */}
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto lg:mx-0">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="Search universities, programs, or locations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 py-4 text-base rounded-xl border-2 border-gray-200 focus:border-primary focus:ring-0 bg-white/80 backdrop-blur-sm"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                Search
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </form>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button
+                asChild
+                className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Link href="/auth/create-account">
+                  Start Your Application
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                asChild
+                className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-4 text-lg rounded-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Link href="/colleges">Browse Universities</Link>
+              </Button>
+            </div>
+
+            {/* Success Metrics */}
+            <div className="grid grid-cols-3 gap-6 pt-8">
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">50K+</div>
+                <div className="text-sm text-gray-600">Students Helped</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">200+</div>
+                <div className="text-sm text-gray-600">Partner Universities</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-2">92%</div>
+                <div className="text-sm text-gray-600">Success Rate</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Hero Image */}
+          <div className="relative">
+            <div className="relative z-10">
+              <Image
+                src="/placeholder.svg?height=600&width=600"
+                alt="Ethiopian students celebrating graduation"
+                width={600}
+                height={600}
+                className="w-full h-auto rounded-3xl shadow-2xl"
+                priority
+              />
+
+              {/* Floating Success Cards */}
+              <div className="absolute -top-6 -left-6 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-8 h-8 text-green-500" />
+                  <div>
+                    <div className="font-semibold text-gray-800">Application Approved!</div>
+                    <div className="text-sm text-gray-600">Addis Ababa University</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -bottom-6 -right-6 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl animate-float delay-700">
+                <div className="flex items-center gap-3">
+                  <Users className="w-8 h-8 text-blue-500" />
+                  <div>
+                    <div className="font-semibold text-gray-800">1,247 Students</div>
+                    <div className="text-sm text-gray-600">Applied This Month</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Background Decoration */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-3xl transform rotate-3 scale-105 -z-10"></div>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }

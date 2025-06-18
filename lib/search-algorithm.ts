@@ -1,3 +1,33 @@
+/**
+ * Advanced Search Algorithm for Universities and Programs
+ *
+ * This module implements a sophisticated search system that combines multiple
+ * search techniques to provide fast, accurate, and relevant results.
+ *
+ * ALGORITHM OVERVIEW:
+ * ==================
+ *
+ * 1. PREPROCESSING PHASE:
+ *    - Text normalization (lowercase, remove accents, trim)
+ *    - Tokenization (split into searchable terms)
+ *    - Index building for O(1) lookups
+ *
+ * 2. SEARCH PHASE:
+ *    - Exact matching (highest priority)
+ *    - Fuzzy matching using Levenshtein distance
+ *    - Partial matching with substring search
+ *    - Phonetic matching for similar-sounding words
+ *
+ * 3. SCORING PHASE:
+ *    - Relevance scoring based on match quality
+ *    - Boost factors for important fields (name > description)
+ *    - Popularity scoring (student count, rating)
+ *    - Final ranking with weighted scores
+ *
+ * TIME COMPLEXITY: O(n * m) where n = items, m = query terms
+ * SPACE COMPLEXITY: O(n * k) where k = average tokens per item
+ */
+
 export interface SearchableItem {
   id: string
   name: string

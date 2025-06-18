@@ -277,6 +277,17 @@ export function Header() {
                   )}
                 </Link>
                 <Link
+                  href="/admin/blog"
+                  className={`font-medium transition-colors relative ${
+                    isActiveLink("/admin/blog") ? "text-[#0a5eb2]" : "text-gray-700 hover:text-[#0a5eb2]"
+                  }`}
+                >
+                  Blog
+                  {isActiveLink("/admin/blog") && (
+                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#0a5eb2]"></span>
+                  )}
+                </Link>
+                <Link
                   href="/admin/forms"
                   className={`font-medium transition-colors relative ${
                     isActiveLink("/admin/forms") ? "text-[#0a5eb2]" : "text-gray-700 hover:text-[#0a5eb2]"
@@ -656,6 +667,15 @@ export function Header() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Applications
+                  </Link>
+                  <Link
+                    href="/admin/blog"
+                    className={`font-medium transition-colors px-2 py-1 rounded ${
+                      isActiveLink("/admin/blog") ? "text-[#0a5eb2] bg-blue-50" : "text-gray-700 hover:text-[#0a5eb2]"
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Blog
                   </Link>
                   <Link
                     href="/admin/forms"

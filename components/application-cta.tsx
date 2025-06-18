@@ -19,7 +19,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
     {
       icon: Users,
       label: "Acceptance Rate",
-      value: `${university.acceptanceRate}%`,
+      value: `${university.profile.acceptance_rate}%`,
       color: "text-green-600",
     },
     {
@@ -91,7 +91,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
             </Button>
 
             <Button variant="outline" asChild className="w-full" size="sm">
-              <Link href={`/universities/${university.slug}/programs`}>View All Programs</Link>
+              <Link href={`/universities/${university.profile.slug}/programs`}>View All Programs</Link>
             </Button>
           </div>
 
@@ -126,7 +126,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
           </div>
 
           <Button variant="ghost" size="sm" className="w-full mt-3 text-xs" asChild>
-            <Link href={`/universities/${university.slug}/requirements`}>View Full Requirements</Link>
+            <Link href={`/universities/${university.profile.slug}/requirements`}>View Full Requirements</Link>
           </Button>
         </CardContent>
       </Card>
@@ -139,7 +139,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
         <CardContent className="text-sm space-y-2">
           <div>
             <div className="font-medium text-gray-900">Admissions Office</div>
-            <div className="text-gray-600">admissions@{university.slug}.edu.et</div>
+            <div className="text-gray-600">admissions@{university.profile.slug}.edu.et</div>
           </div>
           <div>
             <div className="font-medium text-gray-900">Phone</div>

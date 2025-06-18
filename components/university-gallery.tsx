@@ -57,7 +57,7 @@ export function UniversityGallery({ university }: UniversityGalleryProps) {
   ]
 
   const campusStats = [
-    { label: "Campus Area", value: university.campusSize || "150 acres" },
+    { label: "Campus Area", value: university.profile.campus_size || "150 acres" },
     { label: "Buildings", value: "25+" },
     { label: "Dormitories", value: "8" },
     { label: "Research Centers", value: "12" },
@@ -170,7 +170,7 @@ export function UniversityGallery({ university }: UniversityGalleryProps) {
             Campus Location
           </h4>
           <p className="text-gray-600 text-sm mb-3">
-            Located in the heart of {university.location}, our campus is easily accessible by public transportation and
+            Located in the heart of {university.profile.address.city}, our campus is easily accessible by public transportation and
             offers a vibrant learning environment in one of Ethiopia's most dynamic cities.
           </p>
           <div className="flex flex-wrap gap-2">

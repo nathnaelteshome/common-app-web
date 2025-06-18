@@ -6,12 +6,8 @@
  */
 
 import { SearchIndex, type SearchResult, type SearchOptions } from "./search-algorithm"
-import University, {
-  type Program,
-  getUniversities,
-  getAllPrograms,
-  getUniversitiesByCategory,
-} from "@/data/universities-data"
+import type { University, Program } from "@/lib/api/types"
+import { getAllPrograms, getUniversities, getUniversitiesByCategory } from "@/data/universities-data"
 
 // Extended interfaces for search
 interface SearchableUniversity extends University {
@@ -43,17 +39,19 @@ class UniversitySearchService {
    * Called automatically when needed
    */
   private buildIndex(): void {
-    const universities = getUniversities()
+    // For now, return empty array since we need to implement API call
+    // This would need to fetch universities from API
+    const universities: University[] = []
     const searchableUniversities: SearchableUniversity[] = universities.map((uni) => ({
       ...uni,
-      popularity: uni.totalStudents + uni.rating * 1000, // Combine students and rating for popularity
+      popularity: uni.profile.total_students + uni.profile.rankings.rating * 1000,
       keywords: [
         uni.shortName,
-        uni.type,
-        uni.region,
+        uni.profile.university_type,
+        uni.profile.address.region,
         ...uni.programs.map((p) => p.type),
-        ...uni.facilities,
-        ...uni.accreditations,
+        ...uni.profile.facilities,
+        ...uni.profile.accreditation,
       ],
     }))
 

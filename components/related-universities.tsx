@@ -4,18 +4,16 @@ import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Users, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { getUniversitiesByRegion } from "@/data/universities-data"
-import type University from "@/data/universities-data"
+import type { University } from "@/lib/api/types"
 
 interface RelatedUniversitiesProps {
   currentUniversity: University
 }
 
 export function RelatedUniversities({ currentUniversity }: RelatedUniversitiesProps) {
-  // Get related universities from the same region, excluding current university
-  const relatedUniversities = getUniversitiesByRegion(currentUniversity.region)
-    .filter((uni) => uni.id !== currentUniversity.id)
-    .slice(0, 3)
+  // For now, return empty since we need to implement API call for related universities
+  // This would need to fetch universities from the same region via API
+  const relatedUniversities: University[] = []
 
   if (relatedUniversities.length === 0) {
     return null
@@ -25,7 +23,7 @@ export function RelatedUniversities({ currentUniversity }: RelatedUniversitiesPr
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Similar Universities</CardTitle>
-        <p className="text-sm text-gray-600">Other universities in {currentUniversity.region}</p>
+        <p className="text-sm text-gray-600">Other universities in {currentUniversity.profile.address.region}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {relatedUniversities.map((university) => (
@@ -33,7 +31,7 @@ export function RelatedUniversities({ currentUniversity }: RelatedUniversitiesPr
             <div className="flex gap-3">
               <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                 <Image
-                  src={university.image || "/placeholder.svg"}
+                  src={university.profile.campus_image || "/placeholder.svg"}
                   alt={university.name}
                   fill
                   className="object-cover"
@@ -45,24 +43,24 @@ export function RelatedUniversities({ currentUniversity }: RelatedUniversitiesPr
 
                 <div className="flex items-center gap-1 mb-2">
                   <MapPin className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-600">{university.location}</span>
+                  <span className="text-xs text-gray-600">{university.profile.address.city}</span>
                 </div>
 
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex items-center gap-1">
                     <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs text-gray-600">{university.rating}</span>
+                    <span className="text-xs text-gray-600">{university.profile.rankings.rating}</span>
                   </div>
 
                   <Badge variant="outline" className="text-xs px-1 py-0">
-                    {university.type}
+                    {university.profile.university_type}
                   </Badge>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-gray-600 mb-3">
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
-                    <span>{university.totalStudents.toLocaleString()}</span>
+                    <span>{university.profile.total_students.toLocaleString()}</span>
                   </div>
                   <div>{university.programs.length} programs</div>
                 </div>
@@ -79,8 +77,8 @@ export function RelatedUniversities({ currentUniversity }: RelatedUniversitiesPr
         ))}
 
         <Button variant="ghost" className="w-full text-sm" asChild>
-          <Link href={`/colleges?region=${encodeURIComponent(currentUniversity.region)}`}>
-            View All Universities in {currentUniversity.region}
+          <Link href={`/colleges?region=${encodeURIComponent(currentUniversity.profile.address.region)}`}>
+            View All Universities in {currentUniversity.profile.address.region}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Link>
         </Button>

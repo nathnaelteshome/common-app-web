@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Users, BookOpen, ArrowRight, TrendingUp, Building, Calendar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import type University from "@/data/universities-data"
-import { checkDomainOfScale } from "recharts/types/util/ChartUtils"
+import type { University } from "@/lib/api/types"
 
 interface EnhancedUniversityGridProps {
   universities: University[]
@@ -40,12 +39,12 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
             <div className="absolute top-4 left-4 flex gap-2">
               <Badge variant="secondary" className="bg-white/90 text-gray-800">
                 <Building className="w-3 h-3 mr-1" />
-                {university.type}
+                {university.profile.university_type}
               </Badge>
             </div>
             <div className="absolute bottom-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
               <MapPin className="w-3 h-3" />
-              {university.location}
+              {university.profile.address.city}
             </div>
           </div>
 
@@ -55,11 +54,11 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
                 <Star
                   key={i}
                   className={`w-4 h-4 ${
-                    i < Math.floor(university.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                    i < Math.floor(university.profile.rankings.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                   }`}
                 />
               ))}
-              <span className="text-sm text-gray-600 ml-1">{university.rating}</span>
+              <span className="text-sm text-gray-600 ml-1">{university.profile.rankings.rating}</span>
             </div>
 
             <h3 className="font-bold text-gray-800 mb-3 text-sm leading-tight group-hover:text-primary transition-colors">
@@ -70,32 +69,32 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
               <div className="flex items-center justify-between text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  <span>{university.applicationCount.toLocaleString()} Applicants</span>
+                  <span>{(university.applicationCount || university.profile.total_applicants || 0).toLocaleString()} Applicants</span>
                 </div>
-                <span className="text-green-600 font-medium">{university.acceptanceRate}% Acceptance</span>
+                <span className="text-green-600 font-medium">{university.profile.acceptance_rate}% Acceptance</span>
               </div>
 
               <div className="flex items-center justify-between text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="w-3 h-3" />
-                  <span>{university.applicationCount.toLocaleString()} Students</span>
+                  <span>{university.profile.total_students.toLocaleString()} Students</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <BookOpen className="w-3 h-3" />
-                  <span>{university.programCount.toLocaleString()} Programs</span>
+                  <span>{(university.programCount || university.programs?.length || 0).toLocaleString()} Programs</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-1 text-xs text-gray-600">
                 <Calendar className="w-3 h-3" />
-                <span>Est. {university.establishedYear}</span>
+                <span>Est. {university.profile.established_year}</span>
               </div>
             </div>
 
             <div className="mb-4">
               <p className="text-xs text-gray-600 mb-2">Popular Programs:</p>
               <div className="flex flex-wrap gap-1">
-                {/* {university.programs.slice(0, 2).map((program) => (
+                 {university.programs.slice(0, 2).map((program) => (
                   <Badge key={program.id} variant="outline" className="text-xs">
                     {program.name}
                   </Badge>
@@ -104,7 +103,7 @@ export function EnhancedUniversityGrid({ universities }: EnhancedUniversityGridP
                   <Badge variant="outline" className="text-xs">
                     +{university.programs.length - 2} more
                   </Badge>
-                )} */}
+                )} 
               </div>
             </div>
 

@@ -159,7 +159,7 @@ export default function UniversityProgramsPage() {
               <div className="flex items-center gap-4 text-gray-600 mt-2">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{university.location?.city}, {university.location?.state}</span>
+                  <span>{university.profile.address.city}, {university.profile.address.region}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -169,7 +169,7 @@ export default function UniversityProgramsPage() {
               </div>
             </div>
           </div>
-          <p className="text-gray-600 max-w-3xl">{university.description}</p>
+          <p className="text-gray-600 max-w-3xl">{university.profile.description}</p>
         </div>
 
         {/* Programs Overview */}
@@ -192,13 +192,13 @@ export default function UniversityProgramsPage() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  {programs.reduce((sum, program) => sum + (program.availableSeats || 0), 0)}
+                  {programs.reduce((sum, program) => sum + (program.available_seats || 0), 0)}
                 </div>
                 <div className="text-sm text-gray-600">Available Seats</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  ${programs.length > 0 ? Math.min(...programs.map((p) => p.tuitionFee || 0)).toLocaleString() : '0'}+
+                  ${programs.length > 0 ? Math.min(...programs.map((p) => p.tuition_fee || 0)).toLocaleString() : '0'}+
                 </div>
                 <div className="text-sm text-gray-600">Starting From</div>
               </div>
@@ -242,18 +242,18 @@ export default function UniversityProgramsPage() {
 
                             <div className="flex items-center gap-2">
                               <DollarSign className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">${program.tuitionFee.toLocaleString()}/year</span>
+                              <span className="text-sm text-gray-600">${program.tuition_fee.toLocaleString()}/year</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">{program.availableSeats} seats</span>
+                              <span className="text-sm text-gray-600">{program.available_seats} seats</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-sm text-gray-600">
-                                Due: {new Date(program.applicationDeadline).toLocaleDateString()}
+                                Due: {new Date(program.application_deadline).toLocaleDateString()}
                               </span>
                             </div>
                           </div>

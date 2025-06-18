@@ -1,14 +1,23 @@
 export interface Program {
   id: string
+  university_id: string
   name: string
   type: string
   duration: string
   degree: string
   description: string
   requirements: string[]
-  tuitionFee: number
-  availableSeats: number
-  applicationDeadline: string
+  tuition_fee: number
+  application_fee: number
+  available_seats: number
+  application_deadline: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  _count?: {
+    applications: number
+  }
+  applicationCount: number
 }
 
 export interface ProfileAddress {
@@ -37,64 +46,47 @@ export interface ProfileRankings {
   international_rank: number
 }
 
-export default interface UniversityProfile {
-  acceptance_rate: number
-  accreditation: string[]
-  address: ProfileAddress
-  campus_image: string
-  campus_size: string
-  college_name: string
-  contact: ProfileContact
-  created_at: string
-  description: string
-  established_year: number
-  facilities: string[]
-  field_of_studies: string
+export interface UniversityProfile {
   id: string
-  is_active: boolean
-  is_verified: boolean
-  location: ProfileLocation
-  rankings: ProfileRankings
+  user_id: string
+  college_name: string
   short_name: string
   slug: string
-  student_to_faculty_ratio: string
-  total_applicants: number
-  total_students: number
-  university_type: "Public" | "Private"
-  updated_at: string
-  user_id: string
-  verification_documents: string[]
+  description: string
   website: string
+  established_year: number
+  university_type: "Public" | "Private"
+  address: ProfileAddress
+  contact: ProfileContact
+  location: ProfileLocation
+  field_of_studies: string
+  campus_image: string
+  accreditation: string[]
+  rankings: ProfileRankings
+  facilities: string[]
+  campus_size: string
+  student_to_faculty_ratio: string
+  total_students: number
+  total_applicants: number
+  acceptance_rate: number
+  is_verified: boolean
+  verification_documents: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 
-export default interface University {
+export interface University {
   id: string
   name: string
-  shortName: string
   slug: string
-  location: string
-  city: string
-  region: string
-  type: "Public" | "Private"
-  establishedYear: number
-  rating: number
-  totalStudents: number
-  applicationCount: number
-  campusImage: string
+  shortName: string
+  isActive: boolean
   programCount: number
-  totalApplicants: number
-  acceptanceRate: number
-  image: string
-  description: string
-  website: string
-  programs: Program[]
-  facilities: string[]
-  accreditations: string[]
-  campusSize: string
-  studentToFacultyRatio: string
+  applicationCount: number
   profile: UniversityProfile
-  
+  programs: Program[]
 }
 
 export const universities: any = [

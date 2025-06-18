@@ -5,8 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { getUniversityBySlug } from "@/data/universities-data"
-import type University, { Program } from "@/data/universities-data"
+import { universityApi } from "@/lib/api/universities"
+import { apiUtils } from "@/lib/api/client"
+import { toast } from "sonner"
+import type { University, Program } from "@/lib/api/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,13 +31,18 @@ export default function ProgramDetailPage() {
         const slug = params.slug as string
         const programId = params.programId as string
 
-        const universityData = getUniversityBySlug(slug)
+        // Fetch university details
+        const universityResponse = await universityApi.getUniversityBySlug(slug)
 
-        if (!universityData) {
+        if (!universityResponse.success || !universityResponse.data) {
           setError("University not found")
           return
         }
 
+        const universityData = universityResponse.data
+        setUniversity(universityData)
+
+        // Find program in university data
         const programData = universityData.programs.find((p) => p.id === programId)
 
         if (!programData) {
@@ -43,10 +50,14 @@ export default function ProgramDetailPage() {
           return
         }
 
-        setUniversity(universityData)
         setProgram(programData)
       } catch (err) {
-        setError("Failed to load program information")
+        console.error("Error fetching data:", err)
+        if (apiUtils.isApiError(err)) {
+          setError(apiUtils.getErrorMessage(err))
+        } else {
+          setError("Failed to load program information")
+        }
       } finally {
         setLoading(false)
       }
@@ -136,7 +147,7 @@ export default function ProgramDetailPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        <span>{university.location}</span>
+                        <span>{university.profile.address.city}</span>
                       </div>
                     </div>
                   </div>
@@ -164,7 +175,7 @@ export default function ProgramDetailPage() {
                     <DollarSign className="w-5 h-5 text-primary" />
                     <div>
                       <div className="font-medium">Tuition Fee</div>
-                      <div className="text-gray-600">${program.tuitionFee.toLocaleString()}/year</div>
+                      <div className="text-gray-600">${program.tuition_fee.toLocaleString()}/year</div>
                     </div>
                   </div>
 
@@ -172,7 +183,7 @@ export default function ProgramDetailPage() {
                     <Users className="w-5 h-5 text-primary" />
                     <div>
                       <div className="font-medium">Available Seats</div>
-                      <div className="text-gray-600">{program.availableSeats} seats</div>
+                      <div className="text-gray-600">{program.available_seats} seats</div>
                     </div>
                   </div>
 
@@ -180,7 +191,7 @@ export default function ProgramDetailPage() {
                     <Calendar className="w-5 h-5 text-primary" />
                     <div>
                       <div className="font-medium">Application Deadline</div>
-                      <div className="text-gray-600">{new Date(program.applicationDeadline).toLocaleDateString()}</div>
+                      <div className="text-gray-600">{new Date(program.application_deadline).toLocaleDateString()}</div>
                     </div>
                   </div>
                 </div>
@@ -214,18 +225,18 @@ export default function ProgramDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">${program.tuitionFee.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-primary mb-1">${program.tuition_fee.toLocaleString()}</div>
                   <div className="text-sm text-gray-600">per year</div>
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Available Seats:</span>
-                    <span className="font-medium">{program.availableSeats}</span>
+                    <span className="font-medium">{program.available_seats}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Application Deadline:</span>
-                    <span className="font-medium">{new Date(program.applicationDeadline).toLocaleDateString()}</span>
+                    <span className="font-medium">{new Date(program.application_deadline).toLocaleDateString()}</span>
                   </div>
                 </div>
 
@@ -248,11 +259,11 @@ export default function ProgramDetailPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm">{university.rating} Rating</span>
+                    <span className="text-sm">{university.profile.rankings.rating} Rating</span>
                   </div>
-                  <div className="text-sm text-gray-600">{university.totalStudents.toLocaleString()} students</div>
-                  <div className="text-sm text-gray-600">Established {university.establishedYear}</div>
-                  <div className="text-sm text-gray-600">{university.acceptanceRate}% acceptance rate</div>
+                  <div className="text-sm text-gray-600">{university.profile.total_students.toLocaleString()} students</div>
+                  <div className="text-sm text-gray-600">Established {university.profile.established_year}</div>
+                  <div className="text-sm text-gray-600">{university.profile.acceptance_rate}% acceptance rate</div>
                 </div>
               </CardContent>
             </Card>

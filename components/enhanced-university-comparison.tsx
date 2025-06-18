@@ -17,13 +17,13 @@ interface ComparisonMetric {
 }
 
 const comparisonMetrics: ComparisonMetric[] = [
-  { label: "Overall Rating", key: "rating", type: "rating", weight: 0.2 },
+  { label: "Overall Rating", key: "profile.rankings.rating", type: "rating", weight: 0.2 },
   { label: "Tuition Fee", key: "tuitionFee", type: "currency", weight: 0.15 },
-  { label: "Acceptance Rate", key: "acceptanceRate", type: "percentage", weight: 0.1 },
-  { label: "Student Population", key: "studentCount", type: "number", weight: 0.1 },
+  { label: "Acceptance Rate", key: "profile.acceptance_rate", type: "percentage", weight: 0.1 },
+  { label: "Student Population", key: "profile.total_students", type: "number", weight: 0.1 },
   { label: "Faculty Count", key: "facultyCount", type: "number", weight: 0.1 },
-  { label: "Campus Size", key: "campusSize", type: "text", weight: 0.05 },
-  { label: "Established", key: "established", type: "number", weight: 0.05 },
+  { label: "Campus Size", key: "profile.campus_size", type: "text", weight: 0.05 },
+  { label: "Established", key: "profile.established_year", type: "number", weight: 0.05 },
   { label: "Programs Offered", key: "programsCount", type: "number", weight: 0.15 },
   { label: "Research Focus", key: "researchFocus", type: "list", weight: 0.1 },
 ]
@@ -66,20 +66,20 @@ export function EnhancedUniversityComparison() {
 
   const getMetricValue = (university: University, key: string): any => {
     switch (key) {
-      case "rating":
-        return university.rating
+      case "profile.rankings.rating":
+        return university.profile.rankings.rating
       case "tuitionFee":
         return university.tuitionRange?.min || 0
-      case "acceptanceRate":
-        return university.acceptanceRate || 50
-      case "studentCount":
-        return university.studentCount || 10000
+      case "profile.acceptance_rate":
+        return university.profile.acceptance_rate || 50
+      case "profile.total_students":
+        return university.profile.total_students || 10000
       case "facultyCount":
         return university.facultyCount || 500
-      case "campusSize":
-        return university.campusSize || "Medium"
-      case "established":
-        return university.established || 1950
+      case "profile.campus_size":
+        return university.profile.campus_size || "Medium"
+      case "profile.established_year":
+        return university.profile.established_year || 1950
       case "programsCount":
         return university.programs?.length || 0
       case "researchFocus":
@@ -94,9 +94,9 @@ export function EnhancedUniversityComparison() {
       case "rating":
         return (value / 5) * 100
       case "percentage":
-        return key === "acceptanceRate" ? 100 - value : value // Lower acceptance rate is better
+        return key === "profile.acceptance_rate" ? 100 - value : value // Lower acceptance rate is better
       case "number":
-        if (key === "established") {
+        if (key === "profile.established_year") {
           return ((2024 - value) / 100) * 100 // Older is better, but cap at 100 years
         }
         return Math.min((value / 50000) * 100, 100) // Normalize to 0-100
@@ -130,9 +130,9 @@ export function EnhancedUniversityComparison() {
       case "currency":
         return Math.min(...values.filter((v) => v > 0))
       case "percentage":
-        return metric.key === "acceptanceRate" ? Math.max(...values) : Math.min(...values)
+        return metric.key === "profile.acceptance_rate" ? Math.max(...values) : Math.min(...values)
       case "number":
-        if (metric.key === "established") {
+        if (metric.key === "profile.established_year") {
           return Math.min(...values)
         }
         return Math.max(...values)
@@ -223,11 +223,11 @@ export function EnhancedUniversityComparison() {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <MapPin className="w-3 h-3" />
-                      <span>{university.location}</span>
+                      <span>{university.profile.address.city}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span>{university.rating}/5</span>
+                      <span>{university.profile.rankings.rating}/5</span>
                     </div>
                   </div>
                 ))}
@@ -267,13 +267,13 @@ export function EnhancedUniversityComparison() {
                       <CardContent className="p-4">
                         <div className="text-center space-y-3">
                           <img
-                            src={university.image || "/placeholder.svg"}
+                            src={university.profile.campus_image || "/placeholder.svg"}
                             alt={university.name}
                             className="w-16 h-16 rounded-full mx-auto object-cover"
                           />
                           <div>
                             <h3 className="font-semibold text-sm">{university.name}</h3>
-                            <p className="text-xs text-gray-600">{university.location}</p>
+                            <p className="text-xs text-gray-600">{university.profile.address.city}</p>
                           </div>
                           {comparisonScores[university.id] && (
                             <div className="space-y-2">

@@ -60,7 +60,7 @@ export default function CollegesPage() {
         console.log("universities response",response)
         
         if (response.success && response.data) {
-          let universities = response.data.universities  || []
+          let universities = response.data.universities || []
           
           
         console.log("universities response 2",universities)
@@ -134,7 +134,7 @@ export default function CollegesPage() {
       const response = await universityApi.listUniversities(params)
       
       if (response.success && response.data) {
-        let universities = response.data.data || []
+        let universities = response.data.universities || []
         
         // Apply client-side sorting if sorting by applicants (since API doesn't support it)
         if (sortField === 'applicants') {
@@ -175,7 +175,7 @@ export default function CollegesPage() {
       const response = await universityApi.listUniversities(params)
       
       if (response.success && response.data) {
-        setUniversities(response.data.data || [])
+        setUniversities(response.data.universities || [])
       }
     } catch (error) {
       console.error("Error clearing filters:", error)

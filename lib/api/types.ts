@@ -5,10 +5,13 @@ export interface ApiResponse<T = any> {
   message?: string
   error?: string
   errors?: Record<string, string[]>
+  meta?: {
+    timestamp: string
+  }
 }
 
 export interface PaginatedResponse<T> {
-  data: T[]
+  universities: T[]
   pagination: {
     page: number
     limit: number
@@ -165,49 +168,107 @@ export interface AcademicRecord {
   isCompleted: boolean
 }
 
+// Profile Address
+export interface ProfileAddress {
+  city: string
+  region: string
+  country: string
+  address1: string
+  address2?: string
+  postcode: string
+}
+
+// Profile Contact
+export interface ProfileContact {
+  email: string
+  phone1: string
+  phone2?: string
+}
+
+// Profile Location
+export interface ProfileLocation {
+  latitude: number
+  longitude: number
+}
+
+// Profile Rankings
+export interface ProfileRankings {
+  rating: number
+  national_rank: number
+  international_rank: number
+}
+
+// University Profile Interface
+export interface UniversityProfileApi {
+  id: string
+  user_id: string
+  college_name: string
+  short_name: string
+  slug: string
+  description: string
+  website: string
+  established_year: number
+  university_type: "Public" | "Private"
+  address: ProfileAddress
+  contact: ProfileContact
+  location: ProfileLocation
+  field_of_studies: string
+  campus_image: string
+  accreditation: string[]
+  rankings: ProfileRankings
+  facilities: string[]
+  campus_size: string
+  student_to_faculty_ratio: string
+  total_students: number
+  total_applicants: number
+  acceptance_rate: number
+  is_verified: boolean
+  verification_documents: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// University Stats Interface
+export interface UniversityStats {
+  totalPrograms: number
+  totalApplications: number
+}
+
 // University Types
 export interface University {
   id: string
   name: string
   slug: string
-  description: string
-  location: {
-    address: string
-    city: string
-    state: string
-    country: string
-    coordinates?: {
-      lat: number
-      lng: number
-    }
-  }
-  contact: {
-    email: string
-    phone: string
-    website: string
-  }
-  programs: Program[]
-  admissionRequirements: AdmissionRequirement[]
-  tuitionFees: TuitionFee[]
-  rankings?: UniversityRanking[]
-  images: string[]
-  isVerified: boolean
+  shortName: string
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  programCount?: number // Optional for backward compatibility
+  applicationCount?: number // Optional for backward compatibility
+  profile: UniversityProfileApi
+  programs: Program[]
+  stats?: UniversityStats // New stats object from API response
 }
 
 export interface Program {
   id: string
+  university_id: string
   name: string
-  degree: "bachelor" | "master" | "phd" | "certificate"
-  duration: number
-  durationUnit: "months" | "years"
+  type: string
+  duration: string
+  degree: string
   description: string
   requirements: string[]
-  tuitionFee: number
-  currency: string
-  isActive: boolean
+  tuition_fee: number
+  application_fee: number
+  available_seats: number
+  application_deadline: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  _count?: {
+    applications: number
+  }
+  applicationCount: number
 }
 
 export interface AdmissionRequirement {

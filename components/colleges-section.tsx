@@ -1,67 +1,68 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Star, MapPin, Users, BookOpen, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-
-const colleges = [
-  {
-    name: "ADDIS ABABA INSTITUTE OF TECHNOLOGY UNIVERSITY",
-    location: "Addis Ababa",
-    rating: 5.0,
-    fields: 200,
-    students: "25,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "addis-ababa-institute-technology",
-  },
-  {
-    name: "MEKELLE UNIVERSITY",
-    location: "Mekelle",
-    rating: 4.5,
-    fields: 180,
-    students: "32,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "mekelle-university",
-  },
-  {
-    name: "GONDER UNIVERSITY",
-    location: "Gonder",
-    rating: 4.5,
-    fields: 150,
-    students: "28,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "gonder-university",
-  },
-  {
-    name: "JIMMA UNIVERSITY",
-    location: "Jimma",
-    rating: 4.5,
-    fields: 170,
-    students: "30,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "jimma-university",
-  },
-  {
-    name: "BAHIRDAR UNIVERSITY",
-    location: "Bahirdar",
-    rating: 4.5,
-    fields: 160,
-    students: "26,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "bahirdar-university",
-  },
-  {
-    name: "AKSUM UNIVERSITY",
-    location: "Aksum",
-    rating: 4.5,
-    fields: 120,
-    students: "18,000+",
-    image: "/placeholder.svg?height=200&width=300",
-    slug: "aksum-university",
-  },
-]
+import { universityApi } from "@/lib/api/universities"
+import { toast } from "sonner"
+import type { University } from "@/lib/api/types"
 
 export function CollegesSection() {
+  const [universities, setUniversities] = useState<University[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setIsLoading(true)
+        
+        const params = {
+          page: 1,
+          limit: 6, // Show top 6 universities
+          active: true,
+          verified: true,
+          sortBy: 'created_at',
+          sortOrder: 'desc' as const,
+        }
+
+        const response = await universityApi.listUniversities(params)
+        
+        if (response.success && response.data) {
+          setUniversities(response.data.universities || [])
+        } else {
+          toast.error("Failed to load universities")
+          setUniversities([])
+        }
+      } catch (error) {
+        console.error("Error fetching universities:", error)
+        toast.error("Failed to load universities")
+        setUniversities([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchUniversities()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <section className="py-8 md:py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading universities...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-8 md:py-16 px-4 bg-white">
       <div className="container mx-auto">
@@ -87,22 +88,22 @@ export function CollegesSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
-          {colleges.map((college, index) => (
+          {universities.map((university, index) => (
             <Card
-              key={index}
+              key={university.id}
               className="overflow-hidden hover:shadow-lg transition-shadow border-2 border-dashed border-gray-200"
             >
               <div className="relative">
                 <Image
-                  src={college.image || "/placeholder.svg"}
-                  alt={college.name}
+                  src={university.profile.campus_image || "/placeholder.svg"}
+                  alt={university.name}
                   width={300}
                   height={200}
                   className="w-full h-40 md:h-48 object-cover"
                 />
                 <div className="absolute bottom-4 left-4 bg-primary text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {college.location}
+                  {university.profile.address.city}
                 </div>
               </div>
 
@@ -112,27 +113,27 @@ export function CollegesSection() {
                     <Star
                       key={i}
                       className={`w-3 h-3 md:w-4 md:h-4 ${
-                        i < Math.floor(college.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                        i < Math.floor(university.profile.rankings.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                       }`}
                     />
                   ))}
-                  <span className="text-xs md:text-sm text-gray-600 ml-1">{college.rating}k</span>
+                  <span className="text-xs md:text-sm text-gray-600 ml-1">{university.profile.rankings.rating}</span>
                 </div>
 
                 <h3 className="font-bold text-gray-800 mb-3 md:mb-4 text-xs md:text-sm leading-tight">
-                  {college.name}
+                  {university.name}
                 </h3>
 
                 <div className="flex items-center justify-between text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
                   <div className="flex items-center gap-1">
                     <BookOpen className="w-3 h-3 md:w-4 md:h-4" />
-                    <span>{college.fields} Fields</span>
+                    <span>{university.programs?.length || 0} Programs</span>
                   </div>
-                  <span>R/E</span>
+                  <span>{university.profile.university_type.charAt(0)}</span>
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3 md:w-4 md:h-4" />
                     <span className="hidden sm:inline">Students </span>
-                    <span>{college.students}</span>
+                    <span>{university.profile.total_students.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -145,7 +146,7 @@ export function CollegesSection() {
                   </div>
                   <span className="text-xs md:text-sm text-gray-600">Enrolled</span>
                   <Button size="sm" className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm" asChild>
-                    <Link href={`/universities/${college.slug}`}>
+                    <Link href={`/universities/${university.slug}`}>
                       View Details
                       <ArrowRight className="ml-1 w-3 h-3" />
                     </Link>

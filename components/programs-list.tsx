@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, DollarSign, Users, Calendar, BookOpen, ChevronRight, GraduationCap } from "lucide-react"
 import Link from "next/link"
-import type University from "@/data/universities-data"
+import type { University } from "@/lib/api/types"
 
 interface ProgramsListProps {
   university: University
@@ -63,18 +63,18 @@ export function ProgramsList({ university }: ProgramsListProps) {
 
                           <div className="flex items-center gap-1">
                             <DollarSign className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">${program.tuitionFee.toLocaleString()}/year</span>
+                            <span className="text-gray-600">${program.tuition_fee.toLocaleString()}/year</span>
                           </div>
 
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-600">{program.availableSeats} seats</span>
+                            <span className="text-gray-600">{program.available_seats} seats</span>
                           </div>
 
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4 text-gray-400" />
                             <span className="text-gray-600">
-                              Due: {new Date(program.applicationDeadline).toLocaleDateString()}
+                              Due: {new Date(program.application_deadline).toLocaleDateString()}
                             </span>
                           </div>
                         </div>

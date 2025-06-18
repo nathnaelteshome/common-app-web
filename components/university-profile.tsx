@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, GraduationCap, Star, Globe, Phone, Mail, Building, Award, BookOpen } from "lucide-react"
 import Image from "next/image"
-import type University from "@/data/universities-data"
+import type { University } from "@/lib/api/types"
 
 interface UniversityProfileProps {
   university: University
@@ -14,7 +14,7 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
       <CardHeader>
         <div className="flex flex-col md:flex-row gap-6">
           <div className="relative w-full md:w-48 h-48 rounded-lg overflow-hidden">
-            <Image src={university.image || "/placeholder.svg"} alt={university.name} fill className="object-cover" />
+            <Image src={university.profile.campus_image || "/placeholder.svg"} alt={university.name} fill className="object-cover" />
           </div>
 
           <div className="flex-1">
@@ -24,7 +24,7 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <MapPin className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-600">
-                    {university.location}, {university.region}
+                    {university.profile.address.city}, {university.profile.address.region}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 mb-3">
@@ -32,30 +32,30 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
                     <Star
                       key={i}
                       className={`w-4 h-4 ${
-                        i < Math.floor(university.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                        i < Math.floor(university.profile.rankings.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                       }`}
                     />
                   ))}
                   <span className="text-sm text-gray-600 ml-1">
-                    {university.rating} ({university.totalApplicants.toLocaleString()} reviews)
+                    {university.profile.rankings.rating} ({university.profile.total_applicants.toLocaleString()} reviews)
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
-                <Badge variant={university.type === "Public" ? "default" : "secondary"}>
-                  {university.type} University
+                <Badge variant={university.profile.university_type === "Public" ? "default" : "secondary"}>
+                  {university.profile.university_type} University
                 </Badge>
-                <Badge variant="outline">Est. {university.establishedYear}</Badge>
+                <Badge variant="outline">Est. {university.profile.established_year}</Badge>
               </div>
             </div>
 
-            <p className="text-gray-700 mb-4 leading-relaxed">{university.description}</p>
+            <p className="text-gray-700 mb-4 leading-relaxed">{university.profile.description}</p>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <Users className="w-5 h-5 text-primary mx-auto mb-1" />
-                <div className="text-sm font-semibold text-gray-900">{university.totalStudents.toLocaleString()}</div>
+                <div className="text-sm font-semibold text-gray-900">{university.profile.total_students.toLocaleString()}</div>
                 <div className="text-xs text-gray-500">Students</div>
               </div>
 
@@ -67,13 +67,13 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
 
               <div className="text-center">
                 <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
-                <div className="text-sm font-semibold text-gray-900">{university.studentToFacultyRatio}</div>
+                <div className="text-sm font-semibold text-gray-900">{university.profile.student_to_faculty_ratio}</div>
                 <div className="text-xs text-gray-500">Student:Faculty</div>
               </div>
 
               <div className="text-center">
                 <Award className="w-5 h-5 text-primary mx-auto mb-1" />
-                <div className="text-sm font-semibold text-gray-900">{university.acceptanceRate}%</div>
+                <div className="text-sm font-semibold text-gray-900">{university.profile.acceptance_rate}%</div>
                 <div className="text-xs text-gray-500">Acceptance Rate</div>
               </div>
             </div>
@@ -93,17 +93,17 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-gray-400" />
                 <a
-                  href={university.website}
+                  href={university.profile.website}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  {university.website}
+                  {university.profile.website}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">admissions@{university.slug}.edu.et</span>
+                <span className="text-gray-600">admissions@{university.profile.slug}.edu.et</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-gray-400" />
@@ -121,15 +121,15 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Campus Size:</span>
-                <span className="font-medium">{university.campusSize}</span>
+                <span className="font-medium">{university.profile.campus_size}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Founded:</span>
-                <span className="font-medium">{university.establishedYear}</span>
+                <span className="font-medium">{university.profile.established_year}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Type:</span>
-                <span className="font-medium">{university.type}</span>
+                <span className="font-medium">{university.profile.university_type}</span>
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
         <div className="mt-6">
           <h3 className="font-semibold text-gray-900 mb-3">Campus Facilities</h3>
           <div className="flex flex-wrap gap-2">
-            {university.facilities.map((facility, index) => (
+            {university.profile.facilities.map((facility, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {facility}
               </Badge>
@@ -151,7 +151,7 @@ export function UniversityProfile({ university }: UniversityProfileProps) {
         <div className="mt-6">
           <h3 className="font-semibold text-gray-900 mb-3">Accreditations</h3>
           <div className="flex flex-wrap gap-2">
-            {university.accreditations.map((accreditation, index) => (
+            {university.profile.accreditation.map((accreditation, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
                 {accreditation}
               </Badge>

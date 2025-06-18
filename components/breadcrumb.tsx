@@ -4,22 +4,39 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronRight, Home } from "lucide-react"
 
-export function Breadcrumb() {
+interface BreadcrumbItem {
+  label: string
+  href: string
+}
+
+interface BreadcrumbProps {
+  items?: BreadcrumbItem[]
+}
+
+export function Breadcrumb({ items }: BreadcrumbProps) {
   const pathname = usePathname()
 
   // Don't show breadcrumb on home page
   if (pathname === "/") return null
 
-  const pathSegments = pathname.split("/").filter(Boolean)
-
-  const breadcrumbItems = [
-    { name: "Home", href: "/" },
-    ...pathSegments.map((segment, index) => {
-      const href = "/" + pathSegments.slice(0, index + 1).join("/")
-      const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
-      return { name, href }
-    }),
-  ]
+  // Use provided items or generate from path
+  let breadcrumbItems
+  
+  if (items) {
+    // Use provided items
+    breadcrumbItems = items.map(item => ({ name: item.label, href: item.href }))
+  } else {
+    // Auto-generate from path
+    const pathSegments = pathname.split("/").filter(Boolean)
+    breadcrumbItems = [
+      { name: "Home", href: "/" },
+      ...pathSegments.map((segment, index) => {
+        const href = "/" + pathSegments.slice(0, index + 1).join("/")
+        const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ")
+        return { name, href }
+      }),
+    ]
+  }
 
   return (
     <nav className="bg-gray-50 py-4 px-4 border-b border-gray-200">

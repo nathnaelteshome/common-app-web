@@ -164,7 +164,7 @@ export function Footer() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-blue-200 text-sm text-center md:text-left">
-              Copyright © 2024 <span className="text-white font-semibold">CommonApply</span>. All Rights Reserved.
+              Copyright © 2025 <span className="text-white font-semibold">CommonApply</span>. All Rights Reserved.
             </p>
             <div className="flex items-center gap-6 text-sm">
               <Link href="/privacy" className="text-blue-200 hover:text-white transition-colors duration-300">

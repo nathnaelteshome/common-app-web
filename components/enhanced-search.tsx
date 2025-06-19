@@ -10,14 +10,14 @@ import { Search, Filter, X, MapPin, GraduationCap, Building, Clock, Zap } from "
 import { universityApi } from "@/lib/api/universities"
 import { apiUtils } from "@/lib/api/client"
 import type { University } from "@/lib/api/types"
-import { programTypes, regions, degreeTypes } from "@/data/universities-data"
+import { programTypes } from "@/data/universities-data"
 
 interface SearchFilters {
   query: string
   programType: string
-  location: string
   universityType: string
-  degreeType: string
+  fieldOfStudies: string
+  establishedYear: string
 }
 
 interface EnhancedSearchProps {
@@ -36,9 +36,9 @@ export function EnhancedSearch({
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     programType: "",
-    location: "",
     universityType: "",
-    degreeType: "",
+    fieldOfStudies: "",
+    establishedYear: "",
   })
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
@@ -62,8 +62,8 @@ export function EnhancedSearch({
           const response = await universityApi.listUniversities({
             search: filters.query,
             limit: 6,
-            active: true,
-            verified: true
+            active: 'true',
+            verified: 'true'
           })
           
           if (response.success && response.data) {
@@ -110,8 +110,8 @@ export function EnhancedSearch({
       const searchParams: any = {
         page: 1,
         limit: 50,
-        active: true,
-        verified: true,
+        active: 'true',
+        verified: 'true',
       }
 
       // Add search query if provided
@@ -140,32 +140,40 @@ export function EnhancedSearch({
       if (response.success && response.data) {
         results = response.data.universities || []
 
-        // Apply client-side filters for program type, degree type, and location
-        if (filters.location && filters.location !== "all") {
-          results = results.filter((university) => {
-            const profile = university.profile
-            if (!profile) return false
-            
-            // Check if location matches in various profile fields
-            const locationMatch = 
-              profile.address?.region?.toLowerCase().includes(filters.location.toLowerCase()) ||
-              profile.address?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
-              profile.location?.toLowerCase().includes(filters.location.toLowerCase())
-            
-            return locationMatch
-          })
-        }
-
+        // Apply client-side filters for program type, field of studies, and established year
         if (filters.programType && filters.programType !== "all") {
           results = results.filter((university) =>
             university.programs?.some((program) => program.type === filters.programType)
           )
         }
 
-        if (filters.degreeType && filters.degreeType !== "all") {
-          results = results.filter((university) =>
-            university.programs?.some((program) => program.degree === filters.degreeType)
-          )
+        if (filters.fieldOfStudies && filters.fieldOfStudies !== "all") {
+          results = results.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            return profile.field_of_studies?.toLowerCase().includes(filters.fieldOfStudies.toLowerCase())
+          })
+        }
+
+        if (filters.establishedYear && filters.establishedYear !== "all") {
+          results = results.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            const year = profile.established_year
+            
+            switch (filters.establishedYear) {
+              case "before-1970":
+                return year < 1970
+              case "1970-1990":
+                return year >= 1970 && year < 1990
+              case "1990-2000":
+                return year >= 1990 && year < 2000
+              case "after-2000":
+                return year >= 2000
+              default:
+                return true
+            }
+          })
         }
 
         algorithmUsed += ` (${searchMode})`
@@ -199,9 +207,9 @@ export function EnhancedSearch({
     setFilters({
       query: "",
       programType: "",
-      location: "",
       universityType: "",
-      degreeType: "",
+      fieldOfStudies: "",
+      establishedYear: "",
     })
     setSuggestions([])
     setShowSuggestions(false)
@@ -331,18 +339,22 @@ export function EnhancedSearch({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-              <Select value={filters.location} onValueChange={(value) => setFilters({ ...filters, location: value })}>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Field of Studies</label>
+              <Select value={filters.fieldOfStudies} onValueChange={(value) => setFilters({ ...filters, fieldOfStudies: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Locations" />
+                  <SelectValue placeholder="All Fields" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {regions.map((region) => (
-                    <SelectItem key={region} value={region}>
-                      {region}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">All Fields</SelectItem>
+                  <SelectItem value="Engineering">Engineering and Technology</SelectItem>
+                  <SelectItem value="Health">Health Sciences</SelectItem>
+                  <SelectItem value="Business">Business and Management</SelectItem>
+                  <SelectItem value="Science">Applied Sciences and Technology</SelectItem>
+                  <SelectItem value="Social">Social Sciences</SelectItem>
+                  <SelectItem value="Arts">Arts and Humanities</SelectItem>
+                  <SelectItem value="Agriculture">Agriculture</SelectItem>
+                  <SelectItem value="Medicine">Medicine and Health Sciences</SelectItem>
+                  <SelectItem value="Architecture">Architecture and Design</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -365,21 +377,20 @@ export function EnhancedSearch({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Degree Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Established Year</label>
               <Select
-                value={filters.degreeType}
-                onValueChange={(value) => setFilters({ ...filters, degreeType: value })}
+                value={filters.establishedYear}
+                onValueChange={(value) => setFilters({ ...filters, establishedYear: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All Degrees" />
+                  <SelectValue placeholder="All Years" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Degrees</SelectItem>
-                  {degreeTypes.map((degree) => (
-                    <SelectItem key={degree} value={degree}>
-                      {degree}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">All Years</SelectItem>
+                  <SelectItem value="before-1970">Before 1970</SelectItem>
+                  <SelectItem value="1970-1990">1970 - 1990</SelectItem>
+                  <SelectItem value="1990-2000">1990 - 2000</SelectItem>
+                  <SelectItem value="after-2000">After 2000</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -404,16 +415,25 @@ export function EnhancedSearch({
                     {filters.programType}
                   </Badge>
                 )}
-                {filters.location && (
+                {filters.fieldOfStudies && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    {filters.location}
+                    <GraduationCap className="w-3 h-3 mr-1" />
+                    {filters.fieldOfStudies}
                   </Badge>
                 )}
                 {filters.universityType && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
                     <Building className="w-3 h-3 mr-1" />
                     {filters.universityType}
+                  </Badge>
+                )}
+                {filters.establishedYear && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {filters.establishedYear === "before-1970" ? "Before 1970" : 
+                     filters.establishedYear === "1970-1990" ? "1970-1990" :
+                     filters.establishedYear === "1990-2000" ? "1990-2000" :
+                     filters.establishedYear === "after-2000" ? "After 2000" : filters.establishedYear}
                   </Badge>
                 )}
                 <Button

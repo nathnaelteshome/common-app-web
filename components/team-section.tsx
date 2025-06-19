@@ -115,7 +115,7 @@ export function TeamSection() {
             >
               <div className="relative overflow-hidden">
                 {/* Team member image */}
-                <div className="relative w-full h-80 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="relative w-full h-80 overflow-hidden  transition-all bg-gradient-to-br from-gray-100 to-gray-200">
                   <Image
                     src={member.image || "/placeholder.svg"}
                     alt={member.name}

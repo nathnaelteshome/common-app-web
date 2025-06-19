@@ -24,7 +24,7 @@ const values = [
     icon: Users,
     title: "Our Impact",
     description:
-      "Since 2018, we've helped over 50,000 Ethiopian students secure admission to universities, with 92% of our users successfully enrolling in their preferred programs.",
+      "Since 2025, we've helped over 50,000 Ethiopian students secure admission to universities, with 92% of our users successfully enrolling in their preferred programs.",
   },
 ]
 

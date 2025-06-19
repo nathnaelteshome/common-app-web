@@ -34,8 +34,8 @@ export default function CollegesPage() {
         const params: any = {
           page: 1,
           limit: 50, // Adjust based on needs
-          active: true,
-          verified: true,
+          active: 'true',
+          verified: 'true',
         }
         
         // Add search query if provided
@@ -55,7 +55,6 @@ export default function CollegesPage() {
         params.sortOrder = sortOrder || 'desc'
         
         const response = await universityApi.listUniversities(params)
-        console.log("universities response",response)
         
         if (response.success && response.data) {
           let universities = response.data.universities || []
@@ -106,8 +105,8 @@ export default function CollegesPage() {
       const params: any = {
         page: 1,
         limit: 50,
-        active: true,
-        verified: true,
+        active: 'true',
+        verified: 'true',
       }
 
       // Apply filters
@@ -139,21 +138,6 @@ export default function CollegesPage() {
       if (response.success && response.data) {
         let universities = response.data.universities || []
         
-        // Apply client-side filtering for location (since we use regions but API expects cities)
-        if (filters.location && filters.location !== "all") {
-          universities = universities.filter((university) => {
-            const profile = university.profile
-            if (!profile) return false
-            
-            const locationMatch = 
-              (typeof profile.address?.region === 'string' ? profile.address.region.toLowerCase().includes(filters.location.toLowerCase()) : false) ||
-              (typeof profile.address?.city === 'string' ? profile.address.city.toLowerCase().includes(filters.location.toLowerCase()) : false) ||
-              (typeof profile.location === 'string' ? profile.location.toLowerCase().includes(filters.location.toLowerCase()) : false)
-            
-            return locationMatch
-          })
-        }
-
         // Apply client-side filtering for program type
         if (filters.programType && filters.programType !== "all") {
           universities = universities.filter((university) =>
@@ -161,11 +145,35 @@ export default function CollegesPage() {
           )
         }
 
-        // Apply client-side filtering for degree type
-        if (filters.degreeType && filters.degreeType !== "all") {
-          universities = universities.filter((university) =>
-            university.programs?.some((program) => program.degree === filters.degreeType)
-          )
+        // Apply client-side filtering for field of studies
+        if (filters.fieldOfStudies && filters.fieldOfStudies !== "all") {
+          universities = universities.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            return profile.field_of_studies?.toLowerCase().includes(filters.fieldOfStudies.toLowerCase())
+          })
+        }
+
+        // Apply client-side filtering for established year
+        if (filters.establishedYear && filters.establishedYear !== "all") {
+          universities = universities.filter((university) => {
+            const profile = university.profile
+            if (!profile) return false
+            const year = profile.established_year
+            
+            switch (filters.establishedYear) {
+              case "before-1970":
+                return year < 1970
+              case "1970-1990":
+                return year >= 1970 && year < 1990
+              case "1990-2000":
+                return year >= 1990 && year < 2000
+              case "after-2000":
+                return year >= 2000
+              default:
+                return true
+            }
+          })
         }
         
         // Apply client-side sorting if sorting by applicants (since API doesn't support it)
@@ -198,8 +206,8 @@ export default function CollegesPage() {
       const params = {
         page: 1,
         limit: 50,
-        active: true,
-        verified: true,
+        active: 'true',
+        verified: 'true',
         sortBy: 'created_at',
         sortOrder: 'desc' as const,
       }

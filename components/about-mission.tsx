@@ -98,7 +98,7 @@ export function AboutMission() {
               </h2>
 
               <p className="text-lg text-gray-600 leading-relaxed">
-                Founded in 2018 by a team of Ethiopian educators and technology experts, CommonApply was born from a
+                Founded in 2025 by a team of Ethiopian educators and technology experts, CommonApply was born from a
                 simple yet powerful vision: every Ethiopian student should have equal access to quality higher education
                 opportunities.
               </p>

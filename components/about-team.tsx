@@ -1,40 +1,40 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Share2, ArrowRight } from "lucide-react"
-import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Share2, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const teamMembers = [
   {
     name: "ZUFAN ELIAS",
     role: "UI/UX Designer",
-    image: "/placeholder.svg?height=300&width=300&query=professional woman with dark hair smiling",
+    image: "/images/zufe.jpg?height=400&width=400",
   },
   {
     name: "NEBIYU DANIEL",
     role: "CEO And Fullstack Developer",
-    image: "/placeholder.svg?height=300&width=300&query=professional man with beard smiling",
+    image: "/images/neba.jpg?height=400&width=400",
   },
   {
     name: "TAMERAT MISBA",
     role: "CTO And Back-End Developer",
-    image: "/placeholder.svg?height=300&width=300&query=professional man in green shirt smiling",
+    image: "/images/tame.jpg?height=400&width=400",
   },
   {
     name: "NATNEAL TESHOME",
     role: "Fullstack Developer",
-    image: "/placeholder.svg?height=300&width=300&query=professional man with glasses smiling",
+    image: "/images/nati.jpg?height=400&width=400",
   },
   {
     name: "ABEL MULUBIRHAN",
     role: "Front-End Developer",
-    image: "/placeholder.svg?height=300&width=300&query=professional man in suit smiling",
+    image: "/images/abela.jpg?height=400&width=400",
   },
   {
     name: "HAILEYESUS ABRHAM",
     role: "Back-End Developer",
-    image: "/placeholder.svg?height=300&width=300&query=professional man with curly hair smiling",
+    image: "/images/haile.jpg?height=400&width=400",
   },
-]
+];
 
 export function AboutTeam() {
   return (
@@ -46,11 +46,14 @@ export function AboutTeam() {
               OUR TEAM
             </div>
 
-            <h2 className="text-4xl font-bold text-primary font-sora">Meet Our Expert Team</h2>
+            <h2 className="text-4xl font-bold text-primary font-sora">
+              Meet Our Expert Team
+            </h2>
 
             <p className="text-gray-600 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris.
             </p>
 
             <Button className="bg-primary hover:bg-primary/90 text-white">
@@ -61,7 +64,10 @@ export function AboutTeam() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {teamMembers.map((member, index) => (
-              <Card key={index} className="overflow-hidden group hover:shadow-lg transition-shadow">
+              <Card
+                key={index}
+                className="overflow-hidden group hover:shadow-lg transition-shadow"
+              >
                 <div className="relative">
                   <Image
                     src={member.image || "/placeholder.svg"}
@@ -78,7 +84,9 @@ export function AboutTeam() {
                   </Button>
                 </div>
                 <CardContent className="p-4 bg-white">
-                  <h3 className="font-bold text-gray-800 mb-1">{member.name}</h3>
+                  <h3 className="font-bold text-gray-800 mb-1">
+                    {member.name}
+                  </h3>
                   <p className="text-gray-600 text-sm">{member.role}</p>
                   <ArrowRight className="w-4 h-4 text-primary mt-2" />
                 </CardContent>
@@ -88,5 +96,5 @@ export function AboutTeam() {
         </div>
       </div>
     </section>
-  )
+  );
 }

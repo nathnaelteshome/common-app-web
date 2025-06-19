@@ -71,7 +71,7 @@ The API supports both camelCase (frontend) and snake_case (database) field namin
 - `universityId` (string) - Filter by university (Admin only)
 - `programId` (string) - Filter by program
 - `studentId` (string) - Filter by student (Admin only)
-- `sortBy` (string, default: "submittedAt") - Sort field
+- `sortBy` (string, default: "submitted_at") - Sort field
 - `sortOrder` (enum: "asc", "desc", default: "desc") - Sort direction
 
 **Role-Based Filtering:**

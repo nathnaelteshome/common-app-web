@@ -12,49 +12,77 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FileText, Search, Plus, Clock, CheckCircle, XCircle, AlertCircle, Eye, Edit, Download } from "lucide-react"
+import { FileText, Search, Plus, Clock, CheckCircle, XCircle, AlertCircle, Eye, Edit, Download, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { mockApplications } from "@/data/mock-student-data"
+import { applicationApi, type Application } from "@/lib/api/applications"
+import { toast } from "sonner"
 
 export default function StudentApplications() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [sortBy, setSortBy] = useState("lastUpdated")
+  const [sortBy, setSortBy] = useState("submittedAt")
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false
+  })
+
+  // Fetch applications from API
+  const fetchApplications = async () => {
+    try {
+      setLoading(true)
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+        ...(statusFilter !== "all" && { status: statusFilter }),
+        sortBy: sortBy === "lastUpdated" ? "updated_at" : sortBy === "deadline" ? "deadline" : "submitted_at",
+        sortOrder: "desc" as const
+      }
+      
+      const response = await applicationApi.listApplications(params)
+      
+      if (response.success && response.data) {
+        setApplications(response.data.applications || [])
+        setPagination(response.data.pagination)
+      } else {
+        toast.error("Failed to load applications")
+      }
+    } catch (error) {
+      console.error("Error fetching applications:", error)
+      toast.error("Failed to load applications")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "student") {
       router.push("/auth/sign-in")
+    } else {
+      fetchApplications()
     }
-  }, [isAuthenticated, user, router])
+  }, [isAuthenticated, user, router, statusFilter, sortBy, pagination.page])
 
   if (!isAuthenticated || user?.role !== "student") {
     return null
   }
 
-  const filteredApplications = mockApplications.filter((app) => {
+  // Client-side search filtering (since backend doesn't support search yet)
+  const filteredApplications = applications.filter((app) => {
     const matchesSearch =
-      app.universityName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.programName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || app.status === statusFilter
-    return matchesSearch && matchesStatus
+      app.program.university.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.program.name.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSearch
   })
 
-  const sortedApplications = [...filteredApplications].sort((a, b) => {
-    switch (sortBy) {
-      case "lastUpdated":
-        return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
-      case "deadline":
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-      case "university":
-        return a.universityName.localeCompare(b.universityName)
-      case "status":
-        return a.status.localeCompare(b.status)
-      default:
-        return 0
-    }
-  })
+  const sortedApplications = filteredApplications
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -62,7 +90,7 @@ export default function StudentApplications() {
         return <CheckCircle className="w-4 h-4 text-green-600" />
       case "rejected":
         return <XCircle className="w-4 h-4 text-red-600" />
-      case "under-review":
+      case "under_review":
         return <Clock className="w-4 h-4 text-blue-600" />
       case "waitlisted":
         return <AlertCircle className="w-4 h-4 text-yellow-600" />
@@ -77,7 +105,7 @@ export default function StudentApplications() {
         return "bg-green-100 text-green-800"
       case "rejected":
         return "bg-red-100 text-red-800"
-      case "under-review":
+      case "under_review":
         return "bg-blue-100 text-blue-800"
       case "waitlisted":
         return "bg-yellow-100 text-yellow-800"
@@ -89,13 +117,13 @@ export default function StudentApplications() {
   }
 
   const statusCounts = {
-    all: mockApplications.length,
-    draft: mockApplications.filter((app) => app.status === "draft").length,
-    submitted: mockApplications.filter((app) => app.status === "submitted").length,
-    "under-review": mockApplications.filter((app) => app.status === "under-review").length,
-    accepted: mockApplications.filter((app) => app.status === "accepted").length,
-    rejected: mockApplications.filter((app) => app.status === "rejected").length,
-    waitlisted: mockApplications.filter((app) => app.status === "waitlisted").length,
+    all: applications.length,
+    draft: applications.filter((app) => app.status === "draft").length,
+    submitted: applications.filter((app) => app.status === "submitted").length,
+    under_review: applications.filter((app) => app.status === "under_review").length,
+    accepted: applications.filter((app) => app.status === "accepted").length,
+    rejected: applications.filter((app) => app.status === "rejected").length,
+    waitlisted: applications.filter((app) => app.status === "waitlisted").length,
   }
 
   return (
@@ -139,7 +167,7 @@ export default function StudentApplications() {
                   <SelectItem value="all">All Status ({statusCounts.all})</SelectItem>
                   <SelectItem value="draft">Draft ({statusCounts.draft})</SelectItem>
                   <SelectItem value="submitted">Submitted ({statusCounts.submitted})</SelectItem>
-                  <SelectItem value="under-review">Under Review ({statusCounts["under-review"]})</SelectItem>
+                  <SelectItem value="under_review">Under Review ({statusCounts.under_review})</SelectItem>
                   <SelectItem value="accepted">Accepted ({statusCounts.accepted})</SelectItem>
                   <SelectItem value="rejected">Rejected ({statusCounts.rejected})</SelectItem>
                   <SelectItem value="waitlisted">Waitlisted ({statusCounts.waitlisted})</SelectItem>
@@ -150,7 +178,7 @@ export default function StudentApplications() {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="lastUpdated">Last Updated</SelectItem>
+                  <SelectItem value="submittedAt">Last Updated</SelectItem>
                   <SelectItem value="deadline">Deadline</SelectItem>
                   <SelectItem value="university">University</SelectItem>
                   <SelectItem value="status">Status</SelectItem>
@@ -168,130 +196,131 @@ export default function StudentApplications() {
           </TabsList>
 
           <TabsContent value="grid">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedApplications.map((application) => (
-                <Card key={application.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
-                          {application.universityName}
-                        </CardTitle>
-                        <p className="text-sm text-gray-600">{application.programName}</p>
-                      </div>
-                      <Badge className={`${getStatusColor(application.status)} border-0`}>
-                        {application.status.replace("-", " ")}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Progress */}
-                    <div>
-                      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                        <span>Progress</span>
-                        <span>{application.progress}%</span>
-                      </div>
-                      <Progress value={application.progress} className="h-2" />
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Application Fee:</span>
-                        <span className="font-medium">${application.applicationFee}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Payment:</span>
-                        <Badge
-                          variant={application.paymentStatus === "paid" ? "default" : "outline"}
-                          className="text-xs"
-                        >
-                          {application.paymentStatus}
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <span className="ml-2 text-gray-600">Loading applications...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedApplications.map((application) => (
+                  <Card key={application.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
+                            {application.program.university.name}
+                          </CardTitle>
+                          <p className="text-sm text-gray-600">{application.program.name}</p>
+                        </div>
+                        <Badge className={`${getStatusColor(application.status)} border-0`}>
+                          {application.status.replace("_", " ")}
                         </Badge>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Deadline:</span>
-                        <span className="font-medium">{new Date(application.deadline).toLocaleDateString()}</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Status and Submitted Date */}
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Submitted:</span>
+                          <span className="font-medium">
+                            {application.submittedAt ? new Date(application.submittedAt).toLocaleDateString() : "Not submitted"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Payment:</span>
+                          <Badge
+                            variant={application.hasPayment ? "default" : "outline"}
+                            className="text-xs"
+                          >
+                            {application.hasPayment ? "Paid" : "Pending"}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm" className="flex-1" asChild>
-                        <Link href={`/student/applications/${application.id}`}>
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Link>
-                      </Button>
-                      {application.status === "draft" && (
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-2">
                         <Button variant="outline" size="sm" className="flex-1" asChild>
-                          <Link href={`/student/applications/${application.id}/edit`}>
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
+                          <Link href={`/student/applications/${application.id}`}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
                           </Link>
                         </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        {application.status === "draft" && (
+                          <Button variant="outline" size="sm" className="flex-1" asChild>
+                            <Link href={`/student/applications/${application.id}/edit`}>
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="list">
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {sortedApplications.map((application) => (
-                    <div key={application.id} className="p-6 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <span className="ml-2 text-gray-600">Loading applications...</span>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {sortedApplications.map((application) => (
+                      <div key={application.id} className="p-6 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(application.status)}
+                              <Badge className={`${getStatusColor(application.status)} border-0`}>
+                                {application.status.replace("_", " ")}
+                              </Badge>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900">{application.program.university.name}</h3>
+                              <p className="text-sm text-gray-600">{application.program.name}</p>
+                            </div>
+                            <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
+                              <div>
+                                <span className="font-medium">Submitted:</span>{" "}
+                                {application.submittedAt ? new Date(application.submittedAt).toLocaleDateString() : "Not submitted"}
+                              </div>
+                              <div>
+                                <span className="font-medium">Payment:</span>{" "}
+                                {application.hasPayment ? "Paid" : "Pending"}
+                              </div>
+                            </div>
+                          </div>
                           <div className="flex items-center gap-2">
-                            {getStatusIcon(application.status)}
-                            <Badge className={`${getStatusColor(application.status)} border-0`}>
-                              {application.status.replace("-", " ")}
-                            </Badge>
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">{application.universityName}</h3>
-                            <p className="text-sm text-gray-600">{application.programName}</p>
-                          </div>
-                          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-                            <div>
-                              <span className="font-medium">Progress:</span> {application.progress}%
-                            </div>
-                            <div>
-                              <span className="font-medium">Fee:</span> ${application.applicationFee}
-                            </div>
-                            <div>
-                              <span className="font-medium">Deadline:</span>{" "}
-                              {new Date(application.deadline).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/student/applications/${application.id}`}>
-                              <Eye className="w-4 h-4" />
-                            </Link>
-                          </Button>
-                          {application.status === "draft" && (
                             <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/student/applications/${application.id}/edit`}>
-                                <Edit className="w-4 h-4" />
+                              <Link href={`/student/applications/${application.id}`}>
+                                <Eye className="w-4 h-4" />
                               </Link>
                             </Button>
-                          )}
-                          <Button variant="ghost" size="sm">
-                            <Download className="w-4 h-4" />
-                          </Button>
+                            {application.status === "draft" && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={`/student/applications/${application.id}/edit`}>
+                                  <Edit className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="sm">
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 

@@ -48,6 +48,7 @@ export const APPLICATION_ENDPOINTS = {
   GET_BY_UNIVERSITY: (universityId: string) => `${API_PREFIX}/applications/university/${universityId}`,
   BULK_UPDATE: `${API_PREFIX}/applications/bulk-update`,
   EXPORT: `${API_PREFIX}/applications/export`,
+  DOWNLOAD: (id: string) => `${API_PREFIX}/applications/${id}/download`,
 } as const
 
 // University Endpoints - Complete CRUD
@@ -128,6 +129,10 @@ export const ADMIN_ENDPOINTS = {
   STATS: `${API_PREFIX}/admin/stats`,
   USERS: `${API_PREFIX}/admin/users`,
   APPLICATIONS: `${API_PREFIX}/admin/applications`,
+  APPLICATION_STATS: `${API_PREFIX}/admin/applications/stats`,
+  UPDATE_APPLICATION_STATUS: (id: string) => `${API_PREFIX}/admin/applications/${id}/status`,
+  BULK_UPDATE_STATUS: `${API_PREFIX}/admin/applications/bulk-status`,
+  EXPORT_APPLICATIONS: `${API_PREFIX}/admin/applications/export`,
   UNIVERSITIES: `${API_PREFIX}/admin/universities`,
   PAYMENTS: `${API_PREFIX}/admin/payments`,
   REPORTS: `${API_PREFIX}/admin/reports`,
@@ -140,6 +145,8 @@ export const SYSTEM_ADMIN_ENDPOINTS = {
   DASHBOARD: `${API_PREFIX}/system-admin/dashboard`,
   USERS: `${API_PREFIX}/system-admin/users`,
   UNIVERSITIES: `${API_PREFIX}/system-admin/universities`,
+  APPLICATIONS: `${API_PREFIX}/system-admin/applications`,
+  APPLICATION_STATS: `${API_PREFIX}/system-admin/applications/stats`,
   VERIFICATION: `${API_PREFIX}/system-admin/verification`,
   PAYMENTS: `${API_PREFIX}/system-admin/payments`,
   SYSTEM_SETTINGS: `${API_PREFIX}/system-admin/settings`,

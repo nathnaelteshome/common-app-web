@@ -1,27 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FileText, University, Bell, TrendingUp, Clock, CheckCircle, Eye, Settings } from "lucide-react"
+import { FileText, University, Bell, TrendingUp, Clock, CheckCircle, Eye, Settings, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useAuthStore } from "@/store/auth-store"
-import { mockApplications, mockNotifications } from "@/data/mock-student-data"
+import { applicationApi, type Application } from "@/lib/api/applications"
+import { mockNotifications } from "@/data/mock-student-data"
 import { ApplicationStatusCard } from "@/components/application-status-card"
 import { QuickActions } from "@/components/quick-actions"
 import { RecentActivity } from "@/components/recent-activity"
 import { UpcomingDeadlines } from "@/components/upcoming-deadlines"
+import { toast } from "sonner"
 
 export function StudentDashboard() {
   const { user } = useAuthStore()
   const [activeTab, setActiveTab] = useState("overview")
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch applications from API
+  const fetchApplications = async () => {
+    try {
+      setLoading(true)
+      const response = await applicationApi.listApplications({ limit: 10, sortBy: "submitted_at", sortOrder: "desc" })
+      
+      if (response.success && response.data) {
+        setApplications(response.data.applications || [])
+      } else {
+        toast.error("Failed to load applications")
+      }
+    } catch (error) {
+      console.error("Error fetching applications:", error)
+      toast.error("Failed to load applications")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchApplications()
+  }, [])
 
   // Calculate dashboard stats
-  const totalApplications = mockApplications.length
-  const acceptedApplications = mockApplications.filter((app) => app.status === "accepted").length
-  const pendingApplications = mockApplications.filter((app) => app.status === "under-review").length
+  const totalApplications = applications.length
+  const acceptedApplications = applications.filter((app) => app.status === "accepted").length
+  const pendingApplications = applications.filter((app) => app.status === "under_review").length
   const unreadNotifications = mockNotifications.filter((notif) => !notif.isRead).length
 
   const completionRate = totalApplications > 0 ? Math.round((acceptedApplications / totalApplications) * 100) : 0
@@ -47,63 +74,70 @@ export function StudentDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                    <p className="text-2xl font-bold text-gray-900">{totalApplications}</p>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading dashboard...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Applications</p>
+                      <p className="text-2xl font-bold text-gray-900">{totalApplications}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Accepted</p>
-                    <p className="text-2xl font-bold text-green-600">{acceptedApplications}</p>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Accepted</p>
+                      <p className="text-2xl font-bold text-green-600">{acceptedApplications}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Under Review</p>
-                    <p className="text-2xl font-bold text-yellow-600">{pendingApplications}</p>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Under Review</p>
+                      <p className="text-2xl font-bold text-yellow-600">{pendingApplications}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-yellow-600" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-yellow-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                    <p className="text-2xl font-bold text-purple-600">{completionRate}%</p>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Success Rate</p>
+                      <p className="text-2xl font-bold text-purple-600">{completionRate}%</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                    </div>
                   </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Quick Actions */}
           <QuickActions />
@@ -124,9 +158,24 @@ export function StudentDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockApplications.slice(0, 3).map((application) => (
-                      <ApplicationStatusCard key={application.id} application={application} />
-                    ))}
+                    {loading ? (
+                      <div className="flex items-center justify-center h-20">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                        <span className="ml-2 text-gray-600">Loading applications...</span>
+                      </div>
+                    ) : applications.length > 0 ? (
+                      applications.slice(0, 3).map((application) => (
+                        <ApplicationStatusCard key={application.id} application={application} />
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">No applications yet</p>
+                        <Button size="sm" asChild>
+                          <Link href="/student/applications/new">Create Your First Application</Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

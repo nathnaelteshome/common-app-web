@@ -32,6 +32,7 @@ import {
 import Link from "next/link"
 import { mockSystemMetrics, mockUniversityData, mockSystemLogs, mockNotificationTemplates } from "@/data/mock-data"
 import { systemAdminService } from "@/lib/services/system-admin-service"
+import { applicationApi, type Application } from "@/lib/api/applications"
 import { toast } from "sonner"
 
 export default function SystemAdminDashboard() {
@@ -41,6 +42,8 @@ export default function SystemAdminDashboard() {
   const [systemHealth, setSystemHealth] = useState<any>(null)
   const [realTimeMetrics, setRealTimeMetrics] = useState<any>(null)
   const [criticalAlerts, setCriticalAlerts] = useState<any[]>([])
+  const [applications, setApplications] = useState<Application[]>([])
+  const [applicationsLoading, setApplicationsLoading] = useState(true)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "admin") {
@@ -48,6 +51,7 @@ export default function SystemAdminDashboard() {
     } else {
       setIsLoading(false)
       loadSystemData()
+      fetchApplications()
       startRealTimeMonitoring()
     }
   }, [isAuthenticated, user, router])
@@ -66,6 +70,25 @@ export default function SystemAdminDashboard() {
     } catch (error) {
       console.error("Failed to load system data:", error)
       toast.error("Failed to load system data")
+    }
+  }
+
+  // Fetch applications for system-wide statistics
+  const fetchApplications = async () => {
+    try {
+      setApplicationsLoading(true)
+      const response = await applicationApi.listApplications({ limit: 100 }) // Get more for accurate stats
+      
+      if (response.success && response.data) {
+        setApplications(response.data.applications || [])
+      } else {
+        toast.error("Failed to load application statistics")
+      }
+    } catch (error) {
+      console.error("Error fetching applications:", error)
+      toast.error("Failed to load application statistics")
+    } finally {
+      setApplicationsLoading(false)
     }
   }
 
@@ -96,6 +119,15 @@ export default function SystemAdminDashboard() {
   const criticalIssues = mockSystemLogs.filter((log) => log.level === "critical" || log.level === "error").length
   const pendingUniversities = mockUniversityData.filter((uni) => uni.status === "pending").length
 
+  // Calculate application statistics for system admin
+  const totalApplications = applications.length
+  const submittedApplications = applications.filter((app) => app.status === "submitted").length
+  const underReviewApplications = applications.filter((app) => app.status === "under_review").length
+  const acceptedApplications = applications.filter((app) => app.status === "accepted").length
+  const rejectedApplications = applications.filter((app) => app.status === "rejected").length
+  const paidApplications = applications.filter((app) => app.hasPayment).length
+  const applicationRevenue = paidApplications * 500 // Estimated average fee
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -111,7 +143,7 @@ export default function SystemAdminDashboard() {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={loadSystemData}>
+              <Button variant="outline" onClick={() => { loadSystemData(); fetchApplications(); }}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh Data
               </Button>
@@ -142,8 +174,8 @@ export default function SystemAdminDashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* System Health Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* System Health & Application Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <Card className="border-l-4 border-l-green-500">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -203,6 +235,23 @@ export default function SystemAdminDashboard() {
                     </div>
                     <div className="p-3 bg-orange-100 rounded-full">
                       <Clock className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-indigo-500">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Applications</p>
+                      <p className="text-3xl font-bold text-indigo-600">
+                        {applicationsLoading ? '...' : totalApplications}
+                      </p>
+                      <p className="text-xs text-indigo-600 mt-1">System-wide</p>
+                    </div>
+                    <div className="p-3 bg-indigo-100 rounded-full">
+                      <FileText className="w-6 h-6 text-indigo-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -326,6 +375,115 @@ export default function SystemAdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+
+            {/* Application Statistics Overview */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Application Status Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {applicationsLoading ? (
+                    <div className="flex items-center justify-center h-32">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600">Loading statistics...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Submitted</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{submittedApplications}</span>
+                          <Progress value={totalApplications > 0 ? (submittedApplications / totalApplications) * 100 : 0} className="w-20 h-2" />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Under Review</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{underReviewApplications}</span>
+                          <Progress value={totalApplications > 0 ? (underReviewApplications / totalApplications) * 100 : 0} className="w-20 h-2" />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Accepted</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-600">{acceptedApplications}</span>
+                          <Progress value={totalApplications > 0 ? (acceptedApplications / totalApplications) * 100 : 0} className="w-20 h-2" />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Rejected</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-red-600">{rejectedApplications}</span>
+                          <Progress value={totalApplications > 0 ? (rejectedApplications / totalApplications) * 100 : 0} className="w-20 h-2" />
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Payment Rate</span>
+                          <span className="text-sm font-medium text-purple-600">{totalApplications > 0 ? ((paidApplications / totalApplications) * 100).toFixed(1) : 0}%</span>
+                        </div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-sm text-gray-600">Est. Revenue</span>
+                          <span className="text-sm font-medium text-purple-600">${applicationRevenue.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Recent Applications Activity</CardTitle>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/system-admin/applications">
+                      View All Applications
+                      <Eye className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {applicationsLoading ? (
+                    <div className="flex items-center justify-center h-32">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600">Loading applications...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {applications.slice(0, 5).map((application) => (
+                        <div key={application.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{application.program.university.name}</h4>
+                            <p className="text-sm text-gray-600">{application.program.name}</p>
+                            <p className="text-xs text-gray-500">{new Date(application.submittedAt).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={
+                                application.status === "accepted"
+                                  ? "default"
+                                  : application.status === "rejected"
+                                    ? "destructive"
+                                    : "secondary"
+                              }
+                            >
+                              {application.status.replace("_", " ")}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                      {applications.length === 0 && !applicationsLoading && (
+                        <div className="text-center py-8 text-gray-500">
+                          <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                          <p>No applications found</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Critical Alerts */}

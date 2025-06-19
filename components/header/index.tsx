@@ -43,10 +43,15 @@ export function Header() {
   /**
    * Handle user sign out
    */
-  const handleSignOut = () => {
-    signOut()
-    toast.success("Successfully signed out")
-    router.push("/")
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      toast.success("Successfully signed out")
+      router.push("/")
+    } catch (error) {
+      console.error("Sign out error:", error)
+      toast.error("Error signing out")
+    }
   }
 
   return (

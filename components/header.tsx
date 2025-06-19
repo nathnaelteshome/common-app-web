@@ -51,10 +51,15 @@ export function Header() {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
-  const handleSignOut = () => {
-    signOut()
-    toast.success("Successfully signed out")
-    router.push("/")
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      toast.success("Successfully signed out")
+      router.push("/")
+    } catch (error) {
+      console.error("Sign out error:", error)
+      toast.error("Error signing out")
+    }
   }
 
   // Mock data for notifications and messages
@@ -844,9 +849,9 @@ export function Header() {
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-                      onClick={() => {
+                      onClick={async () => {
                         setIsMobileMenuOpen(false)
-                        handleSignOut()
+                        await handleSignOut()
                       }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />

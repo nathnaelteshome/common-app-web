@@ -15,7 +15,7 @@ interface MobileMenuProps {
   onLinkClick: () => void
   unreadMessages: number
   unreadNotifications: number
-  onSignOut: () => void
+  onSignOut: () => Promise<void>
   userProfile?: {
     firstName?: string
     lastName?: string
@@ -135,9 +135,9 @@ export function MobileMenu({
               <Button
                 variant="ghost"
                 className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-                onClick={() => {
+                onClick={async () => {
                   onLinkClick()
-                  onSignOut()
+                  await onSignOut()
                 }}
               >
                 <LogOut className="mr-2 h-4 w-4" />

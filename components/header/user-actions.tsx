@@ -12,7 +12,7 @@ interface UserActionsProps {
   userRole?: UserRole
   unreadMessages: number
   unreadNotifications: number
-  onSignOut: () => void
+  onSignOut: () => Promise<void>
   userProfile?: {
     firstName?: string
     lastName?: string
@@ -96,7 +96,7 @@ export function UserActions({
           variant="ghost"
           size="icon"
           className="relative hover:bg-gray-100 transition-colors text-red-600 hover:text-red-700"
-          onClick={onSignOut}
+          onClick={async () => await onSignOut()}
           aria-label="Sign Out"
         >
           <LogOut className="w-5 h-5" />

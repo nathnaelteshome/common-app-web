@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import type { User } from "@/lib/validations/auth"
+import { authService } from "@/lib/auth-service"
 
 interface AuthState {
   user: User | null
@@ -10,7 +11,7 @@ interface AuthState {
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
-  signOut: () => void
+  signOut: () => Promise<void>
   clearError: () => void
   hasRole: (role: string) => boolean
   hasPermission: (permission: string) => boolean
@@ -36,12 +37,20 @@ export const useAuthStore = create<AuthState>()(
 
       setError: (error) => set({ error }),
 
-      signOut: () => {
-        set({
-          user: null,
-          isAuthenticated: false,
-          error: null,
-        })
+      signOut: async () => {
+        try {
+          // Call the auth service to clear localStorage and cookies
+          await authService.signOut()
+        } catch (error) {
+          console.error("Error during signOut:", error)
+        } finally {
+          // Always clear the store state
+          set({
+            user: null,
+            isAuthenticated: false,
+            error: null,
+          })
+        }
       },
 
       clearError: () => set({ error: null }),

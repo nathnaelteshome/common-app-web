@@ -6,7 +6,6 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/auth-store"
-import { mockNotifications } from "@/data/mock-data"
 import { useNavigation } from "@/hooks/use-navigation"
 
 // Import sub-components
@@ -29,9 +28,6 @@ export function Header() {
   const { user, isAuthenticated, signOut } = useAuthStore()
   const { isActiveLink } = useNavigation()
 
-  // Mock data for notifications and messages
-  const unreadNotifications = mockNotifications.filter((n) => !n.isRead).length
-  const unreadMessages = 5 // Mock unread messages count
 
   /**
    * Toggle mobile menu open/closed
@@ -56,8 +52,8 @@ export function Header() {
 
   return (
     <header className="w-full relative z-50">
-      {/* Top Bar - Only show for students and non-authenticated users */}
-      {(!isAuthenticated || user?.role === "student") && <TopBar />}
+      {/* Top Bar - Only show for non-authenticated users */}
+      {!isAuthenticated && <TopBar />}
 
       {/* Main Navigation */}
       <div className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-40">
@@ -75,8 +71,6 @@ export function Header() {
             <UserActions
               isAuthenticated={isAuthenticated}
               userRole={user?.role}
-              unreadMessages={unreadMessages}
-              unreadNotifications={unreadNotifications}
               onSignOut={handleSignOut}
               userProfile={user?.profile}
               email={user?.email}
@@ -101,8 +95,6 @@ export function Header() {
               userRole={user?.role}
               isActiveLink={isActiveLink}
               onLinkClick={() => setIsMobileMenuOpen(false)}
-              unreadMessages={unreadMessages}
-              unreadNotifications={unreadNotifications}
               onSignOut={handleSignOut}
               userProfile={user?.profile}
               email={user?.email}

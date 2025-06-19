@@ -31,33 +31,65 @@ export default function UniversityComparison() {
     return null
   }
 
-  const comparedUniversities = universities.filter((uni) => comparisonList.some((comp) => comp.universityId === uni.id))
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      handleSearch(searchQuery)
+    } else {
+      setSearchResults([])
+    }
+  }, [searchQuery])
 
-  const availableUniversities = universities.filter(
-    (uni) =>
-      !comparisonList.some((comp) => comp.universityId === uni.id) &&
-      uni.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
-
-  const addToComparison = (universityId: string) => {
-    if (comparisonList.length < 4) {
-      setComparisonList([
-        ...comparisonList,
-        {
+  const addToComparison = async (universityId: string) => {
+    if (comparisonList.length >= 4) {
+      toast.error("You can only compare up to 4 universities")
+      return
+    }
+    
+    if (comparisonList.find((comp) => comp.universityId === universityId)) {
+      toast.error("University already in comparison")
+      return
+    }
+    
+    try {
+      const response = await universityApi.getUniversity(universityId)
+      if (response.success && response.data) {
+        const newComparison: ComparisonItem = {
           id: `comp-${Date.now()}`,
           universityId,
           addedAt: new Date().toISOString(),
-        },
-      ])
+          university: response.data,
+        }
+        
+        const updatedList = [...comparisonList, newComparison]
+        setComparisonList(updatedList)
+        
+        // Save to localStorage
+        const universityIds = updatedList.map(item => item.universityId)
+        localStorage.setItem(`comparisons_${user?.id}`, JSON.stringify(universityIds))
+        
+        toast.success("University added to comparison")
+      }
+    } catch (error) {
+      console.error("Error adding university:", error)
+      toast.error("Failed to add university")
     }
   }
 
   const removeFromComparison = (universityId: string) => {
-    setComparisonList(comparisonList.filter((comp) => comp.universityId !== universityId))
+    const updatedList = comparisonList.filter((comp) => comp.universityId !== universityId)
+    setComparisonList(updatedList)
+    
+    // Save to localStorage
+    const universityIds = updatedList.map(item => item.universityId)
+    localStorage.setItem(`comparisons_${user?.id}`, JSON.stringify(universityIds))
+    
+    toast.success("University removed from comparison")
   }
 
   const clearComparison = () => {
     setComparisonList([])
+    localStorage.removeItem(`comparisons_${user?.id}`)
+    toast.success("All comparisons cleared")
   }
 
   return (

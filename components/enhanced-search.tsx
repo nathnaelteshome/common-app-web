@@ -10,7 +10,6 @@ import { Search, Filter, X, MapPin, GraduationCap, Building, Clock, Zap } from "
 import { universityApi } from "@/lib/api/universities"
 import { apiUtils } from "@/lib/api/client"
 import type { University } from "@/lib/api/types"
-import { programTypes } from "@/data/universities-data"
 
 interface SearchFilters {
   query: string
@@ -45,6 +44,7 @@ export function EnhancedSearch({
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [programTypes, setProgramTypes] = useState<string[]>([])
   const [searchStats, setSearchStats] = useState<{
     searchTime: number
     totalResults: number
@@ -84,6 +84,42 @@ export function EnhancedSearch({
 
     return () => clearTimeout(timer)
   }, [filters.query, searchMode])
+
+  // Fetch program types on component mount
+  useEffect(() => {
+    const fetchProgramTypes = async () => {
+      try {
+        // For now, we'll extract program types from universities
+        const response = await universityApi.listUniversities({
+          page: 1,
+          limit: 100,
+          active: 'true',
+          verified: 'true'
+        })
+        
+        if (response.success && response.data) {
+          const types = new Set<string>()
+          response.data.universities.forEach(university => {
+            university.programs.forEach(program => {
+              if (program.type) {
+                types.add(program.type)
+              }
+            })
+          })
+          setProgramTypes(Array.from(types).sort())
+        }
+      } catch (error) {
+        console.error("Error fetching program types:", error)
+        // Fallback to static data
+        setProgramTypes([
+          "Engineering", "Business", "Computer Science", "Medicine", "Law", 
+          "Arts", "Science", "Education", "Agriculture", "Social Sciences"
+        ])
+      }
+    }
+    
+    fetchProgramTypes()
+  }, [])
 
   // Click outside to close suggestions
   useEffect(() => {

@@ -118,7 +118,7 @@ export default function UniversityDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             <UniversityProfile university={university} />
-            <UniversityGallery university={university} />
+            {/* <UniversityGallery university={university} /> */}
             <ProgramsList university={university} />
             <AdmissionRequirements university={university} />
           </div>

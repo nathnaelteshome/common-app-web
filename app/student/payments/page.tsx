@@ -42,28 +42,63 @@ export default function StudentPaymentsPage() {
       return
     }
 
-    // Load payment data with application details
-    const paymentData = mockPayments.map((payment) => {
-      const application = mockApplications.find((app) => app.id === payment.applicationId)
-      return {
-        ...payment,
-        universityName: application?.universityName || "Unknown University",
-        programName: application?.programName || "Unknown Program",
-        description: `Application fee for ${application?.programName || "program"}`,
-      }
-    })
-    setPayments(paymentData)
+    fetchPayments()
   }, [isAuthenticated, user, router])
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true)
+      const response = await paymentApi.listPayments({
+        page: 1,
+        limit: 100,
+        sortBy: "createdAt",
+        sortOrder: "desc"
+      })
+      
+      if (response.success && response.data) {
+        const paymentsData = response.data.payments || []
+        
+        // Fetch application details for each payment
+        const paymentsWithApplications = await Promise.all(
+          paymentsData.map(async (payment) => {
+            try {
+              const appResponse = await applicationApi.getApplication(payment.applicationId)
+              return {
+                ...payment,
+                application: appResponse.success ? appResponse.data : undefined
+              }
+            } catch (error) {
+              console.error(`Error fetching application ${payment.applicationId}:`, error)
+              return payment
+            }
+          })
+        )
+        
+        setPayments(paymentsWithApplications)
+      } else {
+        toast.error("Failed to load payments")
+      }
+    } catch (error) {
+      console.error("Error fetching payments:", error)
+      toast.error("Failed to load payments")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (!isAuthenticated || user?.role !== "student") {
     return null
   }
 
   const filteredPayments = payments.filter((payment) => {
+    const universityName = payment.application?.program?.university?.name || "Unknown University"
+    const programName = payment.application?.program?.name || "Unknown Program"
+    const transactionId = payment.transactionId || ""
+    
     const matchesSearch =
-      payment.universityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.programName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
+      universityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      programName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transactionId.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || payment.status === statusFilter
 

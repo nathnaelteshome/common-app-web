@@ -2,18 +2,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Users, DollarSign, GraduationCap, ArrowRight, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import type University from "@/data/universities-data"
+import type { University } from "@/lib/api/types"
 
 interface ApplicationCTAProps {
   university: University
 }
 
 export function ApplicationCTA({ university }: ApplicationCTAProps) {
-  // Calculate days until deadline (mock calculation)
-  const applicationDeadline = new Date("2024-06-30")
+  // Calculate days until deadline from programs (use earliest deadline)
+  const earliestDeadline = university.programs.reduce((earliest, program) => {
+    const programDeadline = new Date(program.application_deadline)
+    return !earliest || programDeadline < earliest ? programDeadline : earliest
+  }, null as Date | null)
+  
+  const applicationDeadline = earliestDeadline || new Date("2024-06-30")
   const today = new Date()
   const daysUntilDeadline = Math.ceil((applicationDeadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   const isUrgent = daysUntilDeadline <= 30
+
+  // Get application fee from programs (use most common fee or first program's fee)
+  const applicationFee = university.programs.length > 0 ? university.programs[0].application_fee : 500
 
   const quickStats = [
     {
@@ -31,7 +39,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
     {
       icon: DollarSign,
       label: "Application Fee",
-      value: "500 ETB",
+      value: `${applicationFee} ETB`,
       color: "text-purple-600",
     },
     {
@@ -77,8 +85,8 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
           <div className="text-center p-3 bg-white/50 rounded-lg border border-white/20">
             <Calendar className="w-5 h-5 mx-auto mb-2 text-primary" />
             <div className="text-sm font-semibold text-gray-900">Application Deadline</div>
-            <div className="text-lg font-bold text-primary">June 30, 2024</div>
-            <div className="text-xs text-gray-600">{daysUntilDeadline} days remaining</div>
+            <div className="text-lg font-bold text-primary">{applicationDeadline.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <div className="text-xs text-gray-600">{daysUntilDeadline > 0 ? `${daysUntilDeadline} days remaining` : 'Deadline passed'}</div>
           </div>
 
           {/* CTA Buttons */}
@@ -91,7 +99,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
             </Button>
 
             <Button variant="outline" asChild className="w-full" size="sm">
-              <Link href={`/universities/${university.profile.slug}/programs`}>View All Programs</Link>
+              <Link href={`/universities/${university.slug}/programs`}>View All Programs</Link>
             </Button>
           </div>
 
@@ -126,7 +134,7 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
           </div>
 
           <Button variant="ghost" size="sm" className="w-full mt-3 text-xs" asChild>
-            <Link href={`/universities/${university.profile.slug}/requirements`}>View Full Requirements</Link>
+            <Link href={`/universities/${university.slug}/requirements`}>View Full Requirements</Link>
           </Button>
         </CardContent>
       </Card>
@@ -139,11 +147,11 @@ export function ApplicationCTA({ university }: ApplicationCTAProps) {
         <CardContent className="text-sm space-y-2">
           <div>
             <div className="font-medium text-gray-900">Admissions Office</div>
-            <div className="text-gray-600">admissions@{university.profile.slug}.edu.et</div>
+            <div className="text-gray-600">{university.profile.contact?.email || `admissions@${university.slug}.edu.et`}</div>
           </div>
           <div>
             <div className="font-medium text-gray-900">Phone</div>
-            <div className="text-gray-600">+251-11-{Math.floor(Math.random() * 900000 + 100000)}</div>
+            <div className="text-gray-600">{university.profile.contact?.phone1 || `+251-11-${Math.floor(Math.random() * 900000 + 100000)}`}</div>
           </div>
           <Button variant="ghost" size="sm" className="w-full mt-2 text-xs" asChild>
             <Link href="/contact">Contact Admissions</Link>

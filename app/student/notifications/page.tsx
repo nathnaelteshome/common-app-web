@@ -200,6 +200,7 @@ export default function StudentNotifications() {
             </div>
           </TabsContent>
         </Tabs>
+        )}
       </div>
 
       <Footer />

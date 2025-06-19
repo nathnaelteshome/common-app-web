@@ -11,6 +11,7 @@ interface AuthState {
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
+  signIn: (user: User, token: string) => void
   signOut: () => Promise<void>
   clearError: () => void
   hasRole: (role: string) => boolean
@@ -36,6 +37,18 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (loading) => set({ isLoading: loading }),
 
       setError: (error) => set({ error }),
+
+      signIn: (user, token) => {
+        // Set user in store
+        set({
+          user,
+          isAuthenticated: true,
+          error: null,
+        })
+        
+        // Store user data in localStorage for persistence (already handled by authService)
+        // The token is already stored by authService.signIn method
+      },
 
       signOut: async () => {
         try {

@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { blogApi } from "@/lib/api/blog"
+import { api } from "@/lib/api/client"
 import type { BlogPost, BlogCategory } from "@/lib/api/types"
 import { toast } from "sonner"
 
@@ -57,6 +58,11 @@ export default function AdminBlogPage() {
     if (!isAuthenticated || user?.role !== "university") {
       router.push("/auth/sign-in")
     } else {
+      // Initialize API tokens from localStorage
+      const tokens = api.getTokens()
+      if (tokens.accessToken) {
+        api.setTokens(tokens.accessToken, tokens.refreshToken || "")
+      }
       fetchData()
     }
   }, [isAuthenticated, user, router])
@@ -65,11 +71,13 @@ export default function AdminBlogPage() {
     try {
       setIsLoading(true)
       
-      // Fetch blog posts
+      // Fetch blog posts (include all statuses for admin view)
       const postsResponse = await blogApi.listPosts({
+        page: 1,
         limit: 50,
         sortBy: "created_at",
         sortOrder: "desc"
+        // Don't filter by status - admin should see all posts (draft, published, archived)
       })
 
       // Fetch categories
@@ -78,12 +86,12 @@ export default function AdminBlogPage() {
       if (postsResponse.success && postsResponse.data) {
         setPosts(postsResponse.data.posts)
         
-        // Calculate stats
+        // Calculate stats with safe handling of undefined values
         const totalPosts = postsResponse.data.posts.length
         const publishedPosts = postsResponse.data.posts.filter(p => p.status === "published").length
-        const totalViews = postsResponse.data.posts.reduce((sum, p) => sum + p.viewCount, 0)
-        const totalLikes = postsResponse.data.posts.reduce((sum, p) => sum + p.likeCount, 0)
-        const totalComments = postsResponse.data.posts.reduce((sum, p) => sum + p.commentCount, 0)
+        const totalViews = postsResponse.data.posts.reduce((sum, p) => sum + (p.viewCount || 0), 0)
+        const totalLikes = postsResponse.data.posts.reduce((sum, p) => sum + (p.likeCount || 0), 0)
+        const totalComments = postsResponse.data.posts.reduce((sum, p) => sum + (p.commentCount || 0), 0)
         
         setBlogStats({
           totalPosts,
@@ -127,6 +135,26 @@ export default function AdminBlogPage() {
 
     return true
   })
+
+  const handleDeletePost = async (postId: string, postTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const response = await blogApi.deletePost(postId)
+      if (response.success) {
+        toast.success("Post deleted successfully")
+        // Remove the post from the local state
+        setPosts(prev => prev.filter(p => p.id !== postId))
+      } else {
+        toast.error("Failed to delete post")
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error)
+      toast.error("Failed to delete post")
+    }
+  }
 
   if (isLoading || !isAuthenticated || user?.role !== "university") {
     return (
@@ -247,7 +275,7 @@ export default function AdminBlogPage() {
         <Tabs defaultValue="posts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="posts">All Posts</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
 
@@ -316,7 +344,28 @@ export default function AdminBlogPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPosts.map((post) => (
+                      {filteredPosts.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center">
+                              <FileText className="w-12 h-12 text-gray-400 mb-4" />
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">No blog posts found</h3>
+                              <p className="text-gray-500 mb-4">
+                                {searchQuery || selectedCategory !== "all" || selectedStatus !== "all"
+                                  ? "Try adjusting your search or filter criteria"
+                                  : "Get started by creating your first blog post"}
+                              </p>
+                              <Button asChild>
+                                <Link href="/admin/blog/create">
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Create Your First Post
+                                </Link>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredPosts.map((post) => (
                         <TableRow key={post.id}>
                           <TableCell>
                             <div>
@@ -338,11 +387,11 @@ export default function AdminBlogPage() {
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-1">
                                 <Heart className="w-4 h-4 text-red-400" />
-                                <span className="text-sm">{post.likeCount}</span>
+                                <span className="text-sm">{post.likeCount || 0}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MessageSquare className="w-4 h-4 text-blue-400" />
-                                <span className="text-sm">{post.commentCount}</span>
+                                <span className="text-sm">{post.commentCount || 0}</span>
                               </div>
                             </div>
                           </TableCell>
@@ -372,13 +421,16 @@ export default function AdminBlogPage() {
                                     Edit
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
+                                {/* <DropdownMenuItem asChild>
                                   <Link href={`/admin/blog/${post.id}/analytics`}>
                                     <BarChart3 className="w-4 h-4 mr-2" />
                                     Analytics
                                   </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
+                                </DropdownMenuItem> */}
+                                <DropdownMenuItem 
+                                  className="text-red-600"
+                                  onClick={() => handleDeletePost(post.id, post.title)}
+                                >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
@@ -386,7 +438,8 @@ export default function AdminBlogPage() {
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -465,7 +518,10 @@ export default function AdminBlogPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Engagement Rate</span>
                       <span className="font-semibold text-green-600">
-                        {(((blogStats.totalLikes + blogStats.totalComments) / blogStats.totalViews) * 100).toFixed(1)}%
+                        {blogStats.totalViews > 0 
+                          ? (((blogStats.totalLikes + blogStats.totalComments) / blogStats.totalViews) * 100).toFixed(1)
+                          : "0.0"
+                        }%
                       </span>
                     </div>
                   </div>
@@ -475,8 +531,23 @@ export default function AdminBlogPage() {
           </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((category) => {
+            {categories.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <div className="flex flex-col items-center">
+                    <FileText className="w-12 h-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
+                    <p className="text-gray-500 mb-4">Create categories to organize your blog posts</p>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Category
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categories.map((category) => {
                 const categoryPostCount = posts.filter(p => p.category.id === category.id).length
                 return (
                   <Card key={category.id}>
@@ -493,8 +564,9 @@ export default function AdminBlogPage() {
                     </CardContent>
                   </Card>
                 )
-              })}
-            </div>
+                })}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

@@ -2,9 +2,8 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MessageSquare, Bell, User, LogOut } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 import { NavigationLinks } from "./navigation-links"
 import type { UserRole } from "@/types/auth"
 
@@ -13,8 +12,6 @@ interface MobileMenuProps {
   userRole?: UserRole
   isActiveLink: (href: string) => boolean
   onLinkClick: () => void
-  unreadMessages: number
-  unreadNotifications: number
   onSignOut: () => Promise<void>
   userProfile?: {
     firstName?: string
@@ -33,8 +30,6 @@ export function MobileMenu({
   userRole,
   isActiveLink,
   onLinkClick,
-  unreadMessages,
-  unreadNotifications,
   onSignOut,
   userProfile,
   email,
@@ -93,35 +88,6 @@ export function MobileMenu({
               </div>
             </div>
 
-            {/* Mobile Quick Actions */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <Button
-                variant="outline"
-                className="flex flex-col items-center gap-1 h-auto py-3"
-                onClick={onLinkClick}
-                asChild
-              >
-                <Link href={getRouteByRole("messages")}>
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="text-xs">Messages</span>
-                  {unreadMessages > 0 && <Badge className="bg-[#fe7702] text-white text-xs">{unreadMessages}</Badge>}
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex flex-col items-center gap-1 h-auto py-3"
-                onClick={onLinkClick}
-                asChild
-              >
-                <Link href={getRouteByRole("notifications")}>
-                  <Bell className="h-4 w-4" />
-                  <span className="text-xs">Notifications</span>
-                  {unreadNotifications > 0 && (
-                    <Badge className="bg-red-500 text-white text-xs">{unreadNotifications}</Badge>
-                  )}
-                </Link>
-              </Button>
-            </div>
 
             {/* Mobile Profile Actions */}
             <div className="flex flex-col gap-2">

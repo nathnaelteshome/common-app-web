@@ -1,21 +1,61 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Bell, Search, Filter, Calendar, User, AlertCircle, Info, CheckCircle } from "lucide-react"
-import { mockAnnouncements } from "@/data/mock-student-data"
+import { Bell, Search, Filter, Calendar, User, AlertCircle, Info, CheckCircle, Loader2 } from "lucide-react"
+import { announcementService, type Announcement } from "@/lib/api/announcements"
+import { toast } from "sonner"
 
 export default function AnnouncementsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterPriority, setFilterPriority] = useState("all")
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({})
 
-  const filteredAnnouncements = mockAnnouncements.filter((announcement) => {
+  // Fetch announcements from API
+  const fetchAnnouncements = async () => {
+    try {
+      setLoading(true)
+      const response = await announcementService.getAnnouncementsByAudience("students", {
+        status: "published",
+        page: 1,
+        limit: 100,
+        sortBy: "publishDate",
+        sortOrder: "desc"
+      })
+      
+      if (response.announcements) {
+        setAnnouncements(response.announcements)
+        // Initialize read status for announcements
+        const initialReadStatus: Record<string, boolean> = {}
+        response.announcements.forEach(ann => {
+          // For now, we'll assume all announcements are unread initially
+          // In a real implementation, this would come from user's read status
+          initialReadStatus[ann.id] = false
+        })
+        setReadStatus(initialReadStatus)
+      }
+    } catch (error) {
+      console.error("Error fetching announcements:", error)
+      toast.error("Failed to load announcements")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAnnouncements()
+  }, [])
+
+  // Filter announcements
+  const filteredAnnouncements = announcements.filter((announcement) => {
     const matchesSearch =
       announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       announcement.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -25,16 +65,32 @@ export default function AnnouncementsPage() {
     return matchesSearch && matchesType && matchesPriority
   })
 
-  const unreadCount = mockAnnouncements.filter((a) => !a.isRead).length
+  const unreadCount = Object.values(readStatus).filter(isRead => !isRead).length
+
+  // Mark announcement as read
+  const markAsRead = async (announcementId: string) => {
+    try {
+      await announcementService.markAnnouncementRead(announcementId)
+      setReadStatus(prev => ({ ...prev, [announcementId]: true }))
+    } catch (error) {
+      console.error("Error marking announcement as read:", error)
+    }
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "system":
+      case "urgent":
         return <AlertCircle className="w-4 h-4" />
-      case "university":
-        return <User className="w-4 h-4" />
+      case "event":
+        return <Calendar className="w-4 h-4" />
       case "general":
         return <Info className="w-4 h-4" />
+      case "deadline":
+        return <AlertCircle className="w-4 h-4" />
+      case "maintenance":
+        return <AlertCircle className="w-4 h-4" />
+      case "celebration":
+        return <CheckCircle className="w-4 h-4" />
       default:
         return <Bell className="w-4 h-4" />
     }
@@ -42,11 +98,17 @@ export default function AnnouncementsPage() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "system":
+      case "urgent":
         return "bg-red-100 text-red-800"
-      case "university":
-        return "bg-blue-100 text-blue-800"
+      case "event":
+        return "bg-purple-100 text-purple-800"
       case "general":
+        return "bg-blue-100 text-blue-800"
+      case "deadline":
+        return "bg-orange-100 text-orange-800"
+      case "maintenance":
+        return "bg-yellow-100 text-yellow-800"
+      case "celebration":
         return "bg-green-100 text-green-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -107,9 +169,12 @@ export default function AnnouncementsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                  <SelectItem value="university">University</SelectItem>
                   <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem value="deadline">Deadline</SelectItem>
+                  <SelectItem value="event">Event</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="celebration">Celebration</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={filterPriority} onValueChange={setFilterPriority}>
@@ -135,96 +200,32 @@ export default function AnnouncementsPage() {
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
-            {filteredAnnouncements.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <span className="ml-2 text-gray-600">Loading announcements...</span>
+              </div>
+            ) : filteredAnnouncements.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Bell className="w-12 h-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No announcements found</h3>
                   <p className="text-gray-600 text-center">
-                    Try adjusting your search terms or filters to find what you're looking for.
+                    {searchTerm || filterType !== "all" || filterPriority !== "all"
+                      ? "Try adjusting your search terms or filters to find what you're looking for."
+                      : "No announcements available at the moment."}
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-4">
-                {filteredAnnouncements.map((announcement) => (
-                  <Card
-                    key={announcement.id}
-                    className={`${!announcement.isRead ? "border-l-4 border-l-blue-500" : ""}`}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-full ${getTypeColor(announcement.type)}`}>
-                            {getTypeIcon(announcement.type)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <CardTitle className="text-lg">{announcement.title}</CardTitle>
-                              {!announcement.isRead && (
-                                <Badge variant="secondary" className="text-xs">
-                                  New
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(announcement.createdAt).toLocaleDateString()}
-                              </div>
-                              <Badge className={`text-xs ${getTypeColor(announcement.type)}`}>
-                                {announcement.type}
-                              </Badge>
-                              <div className="flex items-center gap-1">
-                                <div
-                                  className={`w-2 h-2 rounded-full ${getPriorityColor(announcement.priority)}`}
-                                ></div>
-                                <span className="capitalize">{announcement.priority}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-700 mb-4">{announcement.content}</p>
-                      {announcement.actionRequired && (
-                        <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <AlertCircle className="w-4 h-4 text-yellow-600" />
-                          <span className="text-sm text-yellow-800">Action Required</span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between mt-4">
-                        <span className="text-sm text-gray-500">From: {announcement.sender}</span>
-                        {!announcement.isRead && (
-                          <Button size="sm" variant="outline">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Mark as Read
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="unread" className="space-y-4">
-            {filteredAnnouncements.filter((a) => !a.isRead).length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <CheckCircle className="w-12 h-12 text-green-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">All caught up!</h3>
-                  <p className="text-gray-600 text-center">You have no unread announcements.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {filteredAnnouncements
-                  .filter((a) => !a.isRead)
-                  .map((announcement) => (
-                    <Card key={announcement.id} className="border-l-4 border-l-blue-500">
+                {filteredAnnouncements.map((announcement) => {
+                  const isRead = readStatus[announcement.id]
+                  return (
+                    <Card
+                      key={announcement.id}
+                      className={`${!isRead ? "border-l-4 border-l-blue-500" : ""}`}
+                    >
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
@@ -234,14 +235,21 @@ export default function AnnouncementsPage() {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <CardTitle className="text-lg">{announcement.title}</CardTitle>
-                                <Badge variant="secondary" className="text-xs">
-                                  New
-                                </Badge>
+                                {!isRead && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    New
+                                  </Badge>
+                                )}
+                                {announcement.isPinned && (
+                                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-800">
+                                    Pinned
+                                  </Badge>
+                                )}
                               </div>
                               <div className="flex items-center gap-4 text-sm text-gray-600">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
-                                  {new Date(announcement.createdAt).toLocaleDateString()}
+                                  {new Date(announcement.publishDate).toLocaleDateString()}
                                 </div>
                                 <Badge className={`text-xs ${getTypeColor(announcement.type)}`}>
                                   {announcement.type}
@@ -259,15 +267,127 @@ export default function AnnouncementsPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-gray-700 mb-4">{announcement.content}</p>
-                        {announcement.actionRequired && (
-                          <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <AlertCircle className="w-4 h-4 text-yellow-600" />
-                            <span className="text-sm text-yellow-800">Action Required</span>
+                        {announcement.priority === "high" && (
+                          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                            <span className="text-sm text-red-800">High Priority</span>
+                          </div>
+                        )}
+                        {announcement.tags && announcement.tags.length > 0 && (
+                          <div className="flex items-center gap-2 mb-4">
+                            {announcement.tags.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
                           </div>
                         )}
                         <div className="flex items-center justify-between mt-4">
-                          <span className="text-sm text-gray-500">From: {announcement.sender}</span>
-                          <Button size="sm" variant="outline">
+                          <span className="text-sm text-gray-500">
+                            Views: {announcement.views} • Created: {new Date(announcement.createdAt).toLocaleDateString()}
+                          </span>
+                          {!isRead && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => markAsRead(announcement.id)}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Mark as Read
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="unread" className="space-y-4">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <span className="ml-2 text-gray-600">Loading announcements...</span>
+              </div>
+            ) : filteredAnnouncements.filter((a) => !readStatus[a.id]).length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <CheckCircle className="w-12 h-12 text-green-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">All caught up!</h3>
+                  <p className="text-gray-600 text-center">You have no unread announcements.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {filteredAnnouncements
+                  .filter((a) => !readStatus[a.id])
+                  .map((announcement) => (
+                    <Card key={announcement.id} className="border-l-4 border-l-blue-500">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-full ${getTypeColor(announcement.type)}`}>
+                              {getTypeIcon(announcement.type)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <CardTitle className="text-lg">{announcement.title}</CardTitle>
+                                <Badge variant="secondary" className="text-xs">
+                                  New
+                                </Badge>
+                                {announcement.isPinned && (
+                                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-800">
+                                    Pinned
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  {new Date(announcement.publishDate).toLocaleDateString()}
+                                </div>
+                                <Badge className={`text-xs ${getTypeColor(announcement.type)}`}>
+                                  {announcement.type}
+                                </Badge>
+                                <div className="flex items-center gap-1">
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${getPriorityColor(announcement.priority)}`}
+                                  ></div>
+                                  <span className="capitalize">{announcement.priority}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-700 mb-4">{announcement.content}</p>
+                        {announcement.priority === "high" && (
+                          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                            <span className="text-sm text-red-800">High Priority</span>
+                          </div>
+                        )}
+                        {announcement.tags && announcement.tags.length > 0 && (
+                          <div className="flex items-center gap-2 mb-4">
+                            {announcement.tags.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-sm text-gray-500">
+                            Views: {announcement.views} • Created: {new Date(announcement.createdAt).toLocaleDateString()}
+                          </span>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => markAsRead(announcement.id)}
+                          >
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Mark as Read
                           </Button>

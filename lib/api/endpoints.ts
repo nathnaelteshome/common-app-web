@@ -140,6 +140,28 @@ export const ADMIN_ENDPOINTS = {
   LOGS: `${API_PREFIX}/admin/logs`,
 } as const
 
+// Announcement Endpoints - Complete CRUD
+export const ANNOUNCEMENT_ENDPOINTS = {
+  LIST: `${API_PREFIX}/announcements`,
+  CREATE: `${API_PREFIX}/announcements`,
+  GET: (id: string) => `${API_PREFIX}/announcements/${id}`,
+  UPDATE: (id: string) => `${API_PREFIX}/announcements/${id}`,
+  DELETE: (id: string) => `${API_PREFIX}/announcements/${id}`,
+  PUBLISH: (id: string) => `${API_PREFIX}/announcements/${id}/publish`,
+  ARCHIVE: (id: string) => `${API_PREFIX}/announcements/${id}/archive`,
+  PIN: (id: string) => `${API_PREFIX}/announcements/${id}/pin`,
+  UNPIN: (id: string) => `${API_PREFIX}/announcements/${id}/unpin`,
+  GET_BY_AUDIENCE: (audience: string) => `${API_PREFIX}/announcements/audience/${audience}`,
+  GET_BY_TYPE: (type: string) => `${API_PREFIX}/announcements/type/${type}`,
+  GET_ACTIVE: `${API_PREFIX}/announcements/active`,
+  GET_PINNED: `${API_PREFIX}/announcements/pinned`,
+  MARK_READ: (id: string) => `${API_PREFIX}/announcements/${id}/read`,
+  ADD_COMMENT: (id: string) => `${API_PREFIX}/announcements/${id}/comments`,
+  UPDATE_COMMENT: (id: string, commentId: string) => `${API_PREFIX}/announcements/${id}/comments/${commentId}`,
+  DELETE_COMMENT: (id: string, commentId: string) => `${API_PREFIX}/announcements/${id}/comments/${commentId}`,
+  GET_STATS: `${API_PREFIX}/announcements/stats`,
+} as const
+
 // System Admin Endpoints
 export const SYSTEM_ADMIN_ENDPOINTS = {
   DASHBOARD: `${API_PREFIX}/system-admin/dashboard`,

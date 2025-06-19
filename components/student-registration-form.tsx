@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { studentRegistrationSchema, type StudentRegistrationData } from "@/lib/validations/auth"
 import { authService } from "@/lib/auth-service"
 import { useAuthStore } from "@/store/auth-store"
+import { toast } from "sonner"
 
 interface StudentRegistrationFormProps {
   onBack: () => void
@@ -39,10 +40,16 @@ export function StudentRegistrationForm({ onBack }: StudentRegistrationFormProps
       setLoading(true)
       setError(null)
 
-      await authService.signUp(data)
+      const result = await authService.signUp(data)
 
-      // Redirect to email verification
-      router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`)
+      // Sign in the user automatically after successful registration
+      const { signIn } = useAuthStore.getState()
+      await signIn(result.user, result.token)
+
+      toast.success("Registration successful! You are now signed in.")
+
+      // Navigate immediately after successful registration
+      router.push("/student/dashboard")
     } catch (error) {
       setError(error instanceof Error ? error.message : "Registration failed")
     } finally {
@@ -123,8 +130,17 @@ export function StudentRegistrationForm({ onBack }: StudentRegistrationFormProps
                   <Label htmlFor="dateOfBirth">Date Of Birth *</Label>
                   <Input
                     id="dateOfBirth"
-                    {...register("dateOfBirth")}
-                    placeholder="MM/DD/YYYY"
+                    type="date"
+                    {...register("dateOfBirth", {
+                      setValueAs: (value) => {
+                        // Convert YYYY-MM-DD back to MM/DD/YYYY for validation
+                        if (value && value.includes('-')) {
+                          const [year, month, day] = value.split('-')
+                          return `${month}/${day}/${year}`
+                        }
+                        return value
+                      }
+                    })}
                     className={errors.dateOfBirth ? "border-red-500" : ""}
                   />
                   {errors.dateOfBirth && <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth.message}</p>}

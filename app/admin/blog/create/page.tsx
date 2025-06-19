@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge"
 import { Save, Eye, Calendar, Upload, X, Plus, ArrowLeft, FileText, ImageIcon, Tag, Globe } from "lucide-react"
 import Link from "next/link"
 import { blogApi } from "@/lib/api/blog"
+import { api } from "@/lib/api/client"
 import type { BlogCategory } from "@/lib/api/types"
 import { toast } from "sonner"
 
@@ -51,6 +52,11 @@ export default function CreateBlogPage() {
     if (!isAuthenticated || user?.role !== "university") {
       router.push("/auth/sign-in")
     } else {
+      // Initialize API tokens from localStorage
+      const tokens = api.getTokens()
+      if (tokens.accessToken) {
+        api.setTokens(tokens.accessToken, tokens.refreshToken || "")
+      }
       fetchCategories()
     }
   }, [isAuthenticated, user, router])
@@ -107,20 +113,40 @@ export default function CreateBlogPage() {
     setIsSaving(true)
 
     try {
+      if (!formData.title || !formData.content || !formData.excerpt) {
+        toast.error("Please fill in all required fields")
+        setIsSaving(false)
+        return
+      }
+
       const selectedCategory = categories.find(c => c.name === formData.category)
+      if (!selectedCategory && categories.length > 0) {
+        toast.error("Please select a category")
+        setIsSaving(false)
+        return
+      }
+
+      // Generate slug from title
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
       
       const postData = {
+        slug: slug,
         title: formData.title,
-        content: formData.content,
         excerpt: formData.excerpt,
+        content: formData.content,
+        image: formData.image || "/images/blog/default-post.jpg",
+        author: user?.role === "student" && user.profile?.firstName && user.profile?.lastName
+          ? `${user.profile.firstName} ${user.profile.lastName}`
+          : user?.role === "university" && user.profile?.collegeName
+          ? user.profile.collegeName
+          : user?.email || "Admin",
         categoryId: selectedCategory?.id || categories[0]?.id,
         tags: formData.tags,
-        status,
-        featured: formData.featured,
-        image: formData.image,
-        publishedAt: status === "scheduled" ? formData.scheduledDate : new Date().toISOString(),
-        metaTitle: formData.seoTitle,
-        metaDescription: formData.seoDescription,
+        status: status === "scheduled" ? "draft" : status, // Backend handles scheduling differently
+        isFeatured: formData.featured,
       }
 
       const response = await blogApi.createPost(postData)

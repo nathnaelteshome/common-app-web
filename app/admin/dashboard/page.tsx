@@ -184,7 +184,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        </div> */}
 
         {/* Recent Activity & Announcements */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

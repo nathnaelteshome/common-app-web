@@ -78,14 +78,16 @@ export function UniversityRegistrationForm({ onBack }: UniversityRegistrationFor
         }
       }
 
-      await authService.signUp(registrationData)
+      const result = await authService.signUp(registrationData)
 
-      toast.success("Registration submitted successfully!")
+      // Sign in the user automatically after successful registration
+      const { signIn } = useAuthStore.getState()
+      await signIn(result.user, result.token)
 
-      // Redirect to email verification
-      setTimeout(() => {
-        router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`)
-      }, 2000)
+      toast.success("Registration successful! You are now signed in.")
+
+      // Navigate immediately after successful registration
+      router.push("/admin/dashboard")
     } catch (error) {
       console.error("Registration error:", error)
       setError(error instanceof Error ? error.message : "Registration failed")

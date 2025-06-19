@@ -360,8 +360,8 @@ export function Header() {
           {/* Desktop Action Icons - Always visible on large screens when authenticated */}
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-1">
-              {/* Messages Icon with Badge */}
-              <Button variant="ghost" size="icon" className="relative hover:bg-gray-100 transition-colors" asChild>
+              {/* Messages Icon with Badge - COMMENTED OUT */}
+              {/* <Button variant="ghost" size="icon" className="relative hover:bg-gray-100 transition-colors" asChild>
                 <Link
                   href={
                     user?.role === "university"
@@ -379,10 +379,10 @@ export function Header() {
                     </Badge>
                   )}
                 </Link>
-              </Button>
+              </Button> */}
 
-              {/* Notifications Icon with Badge */}
-              <Button variant="ghost" size="icon" className="relative hover:bg-gray-100 transition-colors" asChild>
+              {/* Notifications Icon with Badge - COMMENTED OUT */}
+              {/* <Button variant="ghost" size="icon" className="relative hover:bg-gray-100 transition-colors" asChild>
                 <Link
                   href={
                     user?.role === "university"
@@ -400,7 +400,7 @@ export function Header() {
                     </Badge>
                   )}
                 </Link>
-              </Button>
+              </Button> */}
 
               {/* Profile Icon */}
               <Button variant="ghost" size="icon" className="relative hover:bg-gray-100 transition-colors" asChild>
@@ -775,8 +775,8 @@ export function Header() {
                     </div>
                   </div>
 
-                  {/* Mobile Quick Actions */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
+                  {/* Mobile Quick Actions - COMMENTED OUT */}
+                  {/* <div className="grid grid-cols-2 gap-2 mb-4">
                     <Button
                       variant="outline"
                       className="flex flex-col items-center gap-1 h-auto py-3"
@@ -821,7 +821,7 @@ export function Header() {
                         )}
                       </Link>
                     </Button>
-                  </div>
+                  </div> */}
 
                   {/* Mobile Profile Actions */}
                   <div className="flex flex-col gap-2">

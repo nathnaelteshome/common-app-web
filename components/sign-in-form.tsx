@@ -150,7 +150,7 @@ export function SignInForm() {
               <strong>University:</strong> admin@aait.edu.et / Admin123
             </p>
             <p>
-              <strong>System Admin:</strong> sysadmin@commonapply.com / SysAdmin123
+              {/* <strong>System Admin:</strong> sysadmin@commonapply.com / SysAdmin123 */}
             </p>
           </div>
         </div>

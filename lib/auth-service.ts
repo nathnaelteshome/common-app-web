@@ -7,6 +7,34 @@ import { apiUtils } from "@/lib/api/client"
 class AuthService {
   private currentUser: User | null = null
 
+  // Helper method to convert MM/DD/YYYY to ISO-8601 DateTime format (YYYY-MM-DDTHH:mm:ss.sssZ)
+  private convertDateToISO(dateString: string): string {
+    try {
+      let dateOnly = ''
+      
+      // Handle both MM/DD/YYYY and YYYY-MM-DD formats
+      if (dateString.includes('-')) {
+        // Already in ISO date format
+        dateOnly = dateString
+      } else if (dateString.includes('/')) {
+        const [month, day, year] = dateString.split('/')
+        // Pad month and day with leading zeros if needed
+        const paddedMonth = month.padStart(2, '0')
+        const paddedDay = day.padStart(2, '0')
+        dateOnly = `${year}-${paddedMonth}-${paddedDay}`
+      } else {
+        // If neither format matches, return as-is and let backend handle validation
+        return dateString
+      }
+      
+      // Convert to full ISO-8601 DateTime format with midnight UTC
+      return `${dateOnly}T00:00:00.000Z`
+    } catch (error) {
+      console.error('Error converting date format:', error)
+      return dateString
+    }
+  }
+
   async signIn(data: SignInData): Promise<{ user: User; token: string }> {
     try {
       const response = await AuthApi.login({ 
@@ -40,7 +68,7 @@ class AuthService {
     }
   }
 
-  async signUp(data: StudentRegistrationData | UniversityRegistrationData): Promise<{ message: string }> {
+  async signUp(data: StudentRegistrationData | UniversityRegistrationData): Promise<{ user: User; token: string; message: string }> {
     try {
       // Transform data to match backend API format
       const registerData = {
@@ -52,9 +80,9 @@ class AuthService {
           lastName: (data as StudentRegistrationData).lastName,
           username: (data as StudentRegistrationData).username,
           phone_number: (data as StudentRegistrationData).phoneNumber,
-          date_of_birth: (data as StudentRegistrationData).dateOfBirth,
-          nationality: (data as StudentRegistrationData).nationality || "US",
-          bio: (data as StudentRegistrationData).bio || ""
+          date_of_birth: this.convertDateToISO((data as StudentRegistrationData).dateOfBirth),
+          nationality: "US", // Default nationality since not in form
+          bio: "" // Default empty bio since not in form
         } : {
           collegeName: (data as UniversityRegistrationData).universityName,
           universityType: (data as UniversityRegistrationData).universityType,
@@ -83,8 +111,16 @@ class AuthService {
         throw new Error("Registration failed")
       }
 
+      // Automatically sign in the user after successful registration
+      const loginResponse = await this.signIn({
+        email: data.email,
+        password: data.password
+      })
+
       return {
-        message: "Account created successfully. Please check your email for verification.",
+        user: loginResponse.user,
+        token: loginResponse.token,
+        message: "Account created successfully. You are now signed in!",
       }
     } catch (error) {
       if (apiUtils.isApiError(error)) {

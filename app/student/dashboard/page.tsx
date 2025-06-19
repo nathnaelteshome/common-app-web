@@ -2,13 +2,13 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuthStore } from "@/store/auth-store"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { StudentDashboard } from "@/components/student-dashboard"
 
 export default function StudentDashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuthStore()
   const router = useRouter()
 
   useEffect(() => {

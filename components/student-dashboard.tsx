@@ -9,7 +9,7 @@ import { FileText, University, Bell, TrendingUp, Clock, CheckCircle, Eye, Settin
 import Link from "next/link"
 import { useAuthStore } from "@/store/auth-store"
 import { applicationApi, type Application } from "@/lib/api/applications"
-import { mockNotifications } from "@/data/mock-student-data"
+import { announcementService, type Announcement } from "@/lib/api/announcements"
 import { ApplicationStatusCard } from "@/components/application-status-card"
 import { QuickActions } from "@/components/quick-actions"
 import { RecentActivity } from "@/components/recent-activity"
@@ -20,36 +20,57 @@ export function StudentDashboard() {
   const { user } = useAuthStore()
   const [activeTab, setActiveTab] = useState("overview")
   const [applications, setApplications] = useState<Application[]>([])
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch applications from API
-  const fetchApplications = async () => {
+  // Fetch applications and announcements from API
+  const fetchData = async () => {
     try {
       setLoading(true)
-      const response = await applicationApi.listApplications({ limit: 10, sortBy: "submitted_at", sortOrder: "desc" })
       
-      if (response.success && response.data) {
-        setApplications(response.data.applications || [])
-      } else {
-        toast.error("Failed to load applications")
+      // Fetch applications
+      const applicationsResponse = await applicationApi.listApplications({ 
+        limit: 10, 
+        sortBy: "submitted_at", 
+        sortOrder: "desc" 
+      })
+      
+      if (applicationsResponse.success && applicationsResponse.data) {
+        setApplications(applicationsResponse.data.applications || [])
+      }
+      
+      // Fetch announcements for notifications
+      const announcementsResponse = await announcementService.getAnnouncementsByAudience("students", {
+        status: "published",
+        page: 1,
+        limit: 10,
+        sortBy: "publishDate",
+        sortOrder: "desc"
+      })
+      
+      if (announcementsResponse.announcements) {
+        setAnnouncements(announcementsResponse.announcements)
       }
     } catch (error) {
-      console.error("Error fetching applications:", error)
-      toast.error("Failed to load applications")
+      console.error("Error fetching data:", error)
+      toast.error("Failed to load dashboard data")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchApplications()
+    fetchData()
   }, [])
 
   // Calculate dashboard stats
   const totalApplications = applications.length
   const acceptedApplications = applications.filter((app) => app.status === "accepted").length
   const pendingApplications = applications.filter((app) => app.status === "under_review").length
-  const unreadNotifications = mockNotifications.filter((notif) => !notif.isRead).length
+  // Use announcements as notifications (in a real app, these would be separate)
+  const unreadNotifications = announcements.filter((announcement) => 
+    announcement.priority === "high" || announcement.type === "urgent"
+  ).length
 
   const completionRate = totalApplications > 0 ? Math.round((acceptedApplications / totalApplications) * 100) : 0
 
@@ -140,7 +161,7 @@ export function StudentDashboard() {
           )}
 
           {/* Quick Actions */}
-          <QuickActions />
+          {/* <QuickActions /> */}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -198,22 +219,39 @@ export function StudentDashboard() {
                     {unreadNotifications > 0 && <Badge className="bg-red-500 text-white">{unreadNotifications}</Badge>}
                   </CardTitle>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/student/notifications">View All</Link>
+                    <Link href="/student/announcements">View All</Link>
                   </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {mockNotifications.slice(0, 3).map((notification) => (
-                      <div key={notification.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{notification.title}</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(notification.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
+                    {loading ? (
+                      <div className="flex items-center justify-center h-20">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        <span className="ml-2 text-sm text-gray-600">Loading...</span>
                       </div>
-                    ))}
+                    ) : announcements.length === 0 ? (
+                      <div className="text-center py-6">
+                        <Bell className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">No notifications</p>
+                      </div>
+                    ) : (
+                      announcements.slice(0, 3).map((announcement) => {
+                        const isHighPriority = announcement.priority === "high" || announcement.type === "urgent"
+                        return (
+                          <div key={announcement.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                              isHighPriority ? "bg-red-500" : "bg-blue-500"
+                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">{announcement.title}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(announcement.publishDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
                   </div>
                 </CardContent>
               </Card>

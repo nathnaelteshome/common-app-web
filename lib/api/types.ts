@@ -430,6 +430,7 @@ export interface BlogPost {
   isFeatured: boolean
   commentCount: number
   viewCount: number
+  likeCount?: number // Optional as it might not be in all responses
   readTime: number
   publishedAt: string
   createdAt: string
@@ -496,6 +497,141 @@ export interface BlogCategoryWithPostsResponse {
     hasNext: boolean
     hasPrev: boolean
   }
+}
+
+// Announcement Types
+export interface Announcement {
+  id: string
+  title: string
+  content: string
+  type: "general" | "urgent" | "deadline" | "event" | "maintenance" | "celebration"
+  targetAudience: "all" | "students" | "applicants" | "accepted" | "staff" | "specific"
+  status: "draft" | "published" | "scheduled" | "archived"
+  publishDate: string
+  expiryDate?: string
+  createdAt: string
+  createdBy: string
+  views: number
+  attachments?: {
+    id: string
+    name: string
+    url: string
+    type: string
+    size: number
+  }[]
+  isPinned: boolean
+  allowComments: boolean
+  sendNotification: boolean
+  priority: "low" | "medium" | "high"
+  tags: string[]
+  programIds?: string[]
+  universityIds?: string[]
+  comments?: {
+    id: string
+    userId: string
+    userName: string
+    content: string
+    createdAt: string
+    replies?: {
+      id: string
+      userId: string
+      userName: string
+      content: string
+      createdAt: string
+    }[]
+  }[]
+}
+
+export interface AnnouncementCreateRequest {
+  title: string
+  content: string
+  type: "general" | "urgent" | "deadline" | "event" | "maintenance" | "celebration"
+  targetAudience: "all" | "students" | "applicants" | "accepted" | "staff" | "specific"
+  status: "draft" | "published" | "scheduled"
+  publishDate: string
+  expiryDate?: string
+  isPinned: boolean
+  allowComments: boolean
+  sendNotification: boolean
+  priority: "low" | "medium" | "high"
+  tags: string[]
+  programIds?: string[]
+  universityIds?: string[]
+}
+
+export interface AnnouncementUpdateRequest extends Partial<AnnouncementCreateRequest> {
+  id: string
+}
+
+export interface AnnouncementComment {
+  id: string
+  announcementId: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  content: string
+  createdAt: string
+  updatedAt?: string
+  replies?: AnnouncementCommentReply[]
+}
+
+export interface AnnouncementCommentReply {
+  id: string
+  commentId: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  content: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface AnnouncementCommentCreateRequest {
+  content: string
+  parentCommentId?: string
+}
+
+export interface AnnouncementStats {
+  total: number
+  published: number
+  draft: number
+  scheduled: number
+  archived: number
+  totalViews: number
+  totalComments: number
+  averageViews: number
+  engagementRate: number
+  byType: Record<string, number>
+  byPriority: Record<string, number>
+  byAudience: Record<string, number>
+}
+
+export interface AnnouncementsResponse {
+  announcements: Announcement[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+export interface AnnouncementFilters {
+  type?: string
+  status?: string
+  priority?: string
+  targetAudience?: string
+  tags?: string[]
+  dateFrom?: string
+  dateTo?: string
+  isPinned?: boolean
+  search?: string
+  page?: number
+  limit?: number
+  sortBy?: "createdAt" | "publishDate" | "views" | "title"
+  sortOrder?: "asc" | "desc"
 }
 
 // Error Types

@@ -8,12 +8,14 @@ export * from "./applications"
 export * from "./universities"
 export * from "./payments"
 export * from "./notifications"
+export * from "./announcements"
 
 // Re-export commonly used APIs
 export { authApi } from "./auth"
 export { userApi } from "./users"
 export { applicationApi } from "./applications"
 export { universityApi } from "./universities"
+export { announcementService } from "./announcements"
 export { api, apiUtils } from "./client"
 
 // API configuration

@@ -9,15 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Download, CreditCard, Receipt, CheckCircle, Clock, XCircle } from "lucide-react"
-import { mockPayments, mockApplications } from "@/data/mock-student-data"
+import { ArrowLeft, Download, CreditCard, Receipt, CheckCircle, Clock, XCircle, Loader2 } from "lucide-react"
+import { paymentApi, type Payment } from "@/lib/api/payments"
+import { applicationApi, type Application } from "@/lib/api/applications"
+import { toast } from "sonner"
 
 export default function PaymentDetailsPage() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
   const params = useParams()
-  const [payment, setPayment] = useState<any>(null)
-  const [application, setApplication] = useState<any>(null)
+  const [payment, setPayment] = useState<Payment | null>(null)
+  const [application, setApplication] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "student") {
@@ -25,20 +28,60 @@ export default function PaymentDetailsPage() {
       return
     }
 
-    const paymentId = params.id as string
-    const foundPayment = mockPayments.find((p) => p.id === paymentId)
-
-    if (foundPayment) {
-      setPayment(foundPayment)
-      const relatedApp = mockApplications.find((app) => app.id === foundPayment.applicationId)
-      setApplication(relatedApp)
-    } else {
-      router.push("/student/payments")
-    }
+    fetchPaymentDetails()
   }, [isAuthenticated, user, router, params.id])
+
+  const fetchPaymentDetails = async () => {
+    try {
+      setLoading(true)
+      const paymentId = params.id as string
+      
+      const paymentResponse = await paymentApi.getPayment(paymentId)
+      
+      if (!paymentResponse.success || !paymentResponse.data) {
+        toast.error("Payment not found")
+        router.push("/student/payments")
+        return
+      }
+      
+      setPayment(paymentResponse.data)
+      
+      // Fetch related application
+      try {
+        const appResponse = await applicationApi.getApplication(paymentResponse.data.applicationId)
+        if (appResponse.success) {
+          setApplication(appResponse.data)
+        }
+      } catch (error) {
+        console.error("Error fetching application:", error)
+      }
+      
+    } catch (error) {
+      console.error("Error fetching payment details:", error)
+      toast.error("Failed to load payment details")
+      router.push("/student/payments")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   if (!isAuthenticated || user?.role !== "student") {
     return null
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">Loading payment details...</span>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
   }
 
   if (!payment) {

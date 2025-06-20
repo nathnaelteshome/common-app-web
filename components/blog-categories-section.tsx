@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Users, Graduation, Building, Heart, Scale, Globe, Lightbulb } from "lucide-react"
+import { BookOpen, Users, GraduationCap, Building, Heart, Scale, Globe, Lightbulb } from "lucide-react"
 import Link from "next/link"
 import { blogApi } from "@/lib/api/blog"
 import type { BlogCategory } from "@/lib/api/types"
@@ -11,7 +11,7 @@ import type { BlogCategory } from "@/lib/api/types"
 const categoryIcons: Record<string, any> = {
   "University News": BookOpen,
   "Student Life": Users,
-  "Academic": Graduation,
+  "Academic": GraduationCap,
   "Campus": Building,
   "Health": Heart,
   "Legal": Scale,

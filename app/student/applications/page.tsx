@@ -137,12 +137,12 @@ export default function StudentApplications() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">My Applications</h1>
             <p className="text-gray-600">Track and manage your university applications</p>
           </div>
-          <Button className="mt-4 md:mt-0 bg-[#0a5eb2] hover:bg-[#0a5eb2]/90" asChild>
+          {/* <Button className="mt-4 md:mt-0 bg-[#0a5eb2] hover:bg-[#0a5eb2]/90" asChild>
             <Link href="/student/applications/new">
               <Plus className="w-4 h-4 mr-2" />
               New Application
             </Link>
-          </Button>
+          </Button> */}
         </div>
 
         {/* Filters and Search */}

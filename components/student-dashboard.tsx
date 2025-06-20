@@ -88,7 +88,7 @@ export function StudentDashboard() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="applications">Applications</TabsTrigger>
-          <TabsTrigger value="compare">Compare</TabsTrigger>
+          {/* <TabsTrigger value="compare">Compare</TabsTrigger> */}
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>

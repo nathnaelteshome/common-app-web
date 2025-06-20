@@ -7,8 +7,12 @@ import { Footer } from "@/components/footer"
 import { ApplicationFlow } from "@/components/application-flow"
 import { GuestApplicationPrompt } from "@/components/guest-application-prompt"
 import { useAuthStore } from "@/store/auth-store"
-import { getUniversities } from "@/data/universities-data"
-import type University from "@/data/universities-data"
+import { universityApi } from "@/lib/api/universities"
+import { programApi } from "@/lib/api/programs"
+import { apiUtils } from "@/lib/api/client"
+import { toast } from "sonner"
+import type { University } from "@/lib/api/types"
+import type { Program } from "@/lib/api/programs"
 import { Button } from "@/components/ui/button"
 
 export default function ApplyPage() {
@@ -21,36 +25,64 @@ export default function ApplyPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    try {
-      setIsLoading(true)
-      const universityId = searchParams.get("university")
-      const programId = searchParams.get("program")
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const universityId = searchParams.get("university")
+        const programId = searchParams.get("program")
 
-      if (universityId) {
-        const universities = getUniversities()
-        const university = universities.find((u) => u.id === universityId)
-        if (university) {
-          setSelectedUniversity(university)
-          if (programId) {
-            // Verify the program exists
-            const program = university.programs?.find((p) => p.id === programId)
-            if (program) {
-              setSelectedProgramId(programId)
-            } else {
-              setError("Selected program not found")
-            }
-          } else {
+        if (universityId) {
+          // Fetch university details from API
+          const universityResponse = await universityApi.getUniversity(universityId)
+          
+          if (!universityResponse.success || !universityResponse.data) {
             setError("University not found")
+            return
+          }
+
+          const universityData = universityResponse.data
+          setSelectedUniversity(universityData)
+
+          if (programId) {
+            // Verify the program exists using program API
+            try {
+              const programResponse = await programApi.getProgram(programId)
+              if (programResponse.success && programResponse.data) {
+                // Verify the program belongs to the selected university
+                if (programResponse.data.university.id === universityId) {
+                  setSelectedProgramId(programId)
+                } else {
+                  setError("Selected program does not belong to this university")
+                }
+              } else {
+                setError("Selected program not found")
+              }
+            } catch (programError) {
+              console.error("Error fetching program:", programError)
+              if (apiUtils.isApiError(programError)) {
+                setError(apiUtils.getErrorMessage(programError))
+              } else {
+                setError("Selected program not found")
+              }
+            }
           }
         } else {
-          setError("University not found")
+          setError("Please select a university and program to apply")
         }
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        if (apiUtils.isApiError(err)) {
+          setError(apiUtils.getErrorMessage(err))
+        } else {
+          setError("Failed to load application data")
+        }
+      } finally {
+        setIsLoading(false)
       }
-    } catch (err) {
-      setError("Failed to load university data")
-    } finally {
-      setIsLoading(false)
     }
+
+    fetchData()
   }, [searchParams])
 
   if (isLoading) {

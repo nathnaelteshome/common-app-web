@@ -392,7 +392,7 @@ export default function ApplicationDetailPage() {
             </Card>
 
             {/* Actions */}
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Actions</CardTitle>
               </CardHeader>
@@ -431,7 +431,7 @@ export default function ApplicationDetailPage() {
                   </Button>
                 )}
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </div>

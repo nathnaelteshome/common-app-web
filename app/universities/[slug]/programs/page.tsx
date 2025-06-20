@@ -6,9 +6,11 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { universityApi } from "@/lib/api/universities"
+import { programApi } from "@/lib/api/programs"
 import { apiUtils } from "@/lib/api/client"
 import { toast } from "sonner"
-import type { University, Program } from "@/lib/api/types"
+import type { University } from "@/lib/api/types"
+import type { Program } from "@/lib/api/programs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -41,11 +43,16 @@ export default function UniversityProgramsPage() {
         const universityData = universityResponse.data
         setUniversity(universityData)
 
-        // Fetch university programs
+        // Fetch university programs using programs API
         try {
-          const programsResponse = await universityApi.getUniversityPrograms(universityData.id)
+          const programsResponse = await programApi.listPrograms({
+            universityId: universityData.id,
+            limit: 50,
+            sortBy: "name",
+            sortOrder: "asc"
+          })
           if (programsResponse.success && programsResponse.data) {
-            setPrograms(programsResponse.data)
+            setPrograms(programsResponse.data.programs)
           } else {
             // Use programs from university data if API call fails
             setPrograms(universityData.programs || [])
@@ -131,7 +138,7 @@ export default function UniversityProgramsPage() {
 
   const groupedPrograms = programs.reduce(
     (acc, program) => {
-      const type = program.category || program.type || "Other"
+      const type = program.level || program.type || "Other"
       if (!acc[type]) {
         acc[type] = []
       }
@@ -192,13 +199,13 @@ export default function UniversityProgramsPage() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  {programs.reduce((sum, program) => sum + (program.available_seats || 0), 0)}
+                  {programs.reduce((sum, program) => sum + (program.applicationCount || 0), 0)}
                 </div>
-                <div className="text-sm text-gray-600">Available Seats</div>
+                <div className="text-sm text-gray-600">Total Applications</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
-                  ${programs.length > 0 ? Math.min(...programs.map((p) => p.tuition_fee || 0)).toLocaleString() : '0'}+
+                  ${programs.length > 0 ? Math.min(...programs.map((p) => p.tuitionFee || 0)).toLocaleString() : '0'}+
                 </div>
                 <div className="text-sm text-gray-600">Starting From</div>
               </div>
@@ -228,7 +235,7 @@ export default function UniversityProgramsPage() {
                           <div className="flex items-start justify-between mb-3">
                             <h3 className="font-semibold text-xl text-gray-900">{program.name}</h3>
                             <Badge variant="outline" className="ml-2">
-                              {program.degree}
+                              {program.type}
                             </Badge>
                           </div>
 
@@ -237,23 +244,23 @@ export default function UniversityProgramsPage() {
                           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">{program.duration}</span>
+                              <span className="text-sm text-gray-600">{program.duration} years</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <DollarSign className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">${program.tuition_fee.toLocaleString()}/year</span>
+                              <span className="text-sm text-gray-600">${program.tuitionFee.toLocaleString()} {program.currency}/year</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-600">{program.available_seats} seats</span>
+                              <span className="text-sm text-gray-600">{program.applicationCount} applications</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-sm text-gray-600">
-                                Due: {new Date(program.application_deadline).toLocaleDateString()}
+                                Due: {new Date(program.applicationDeadline).toLocaleDateString()}
                               </span>
                             </div>
                           </div>

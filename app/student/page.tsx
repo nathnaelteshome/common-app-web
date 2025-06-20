@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { StudentDashboard } from "@/components/student-dashboard"
 
 export default function StudentPage() {
-  constj{ user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {

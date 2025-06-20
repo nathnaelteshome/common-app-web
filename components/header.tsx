@@ -164,7 +164,7 @@ export function Header() {
                         <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#0a5eb2]"></span>
                       )}
                     </Link>
-                    <Link
+                    {/* <Link
                       href="/student/payments"
                       className={`font-medium transition-colors relative ${
                         isActiveLink("/student/payments") ? "text-[#0a5eb2]" : "text-gray-700 hover:text-[#0a5eb2]"
@@ -174,7 +174,7 @@ export function Header() {
                       {isActiveLink("/student/payments") && (
                         <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#0a5eb2]"></span>
                       )}
-                    </Link>
+                    </Link> */}
                   </>
                 )}
 
@@ -606,7 +606,7 @@ export function Header() {
                       >
                         Find College
                       </Link>
-                      <Link
+                      {/* <Link
                         href="/student/payments"
                         className={`font-medium transition-colors px-2 py-1 rounded ${
                           isActiveLink("/student/payments")
@@ -616,7 +616,7 @@ export function Header() {
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Payment
-                      </Link>
+                      </Link> */}
                     </>
                   )}
 

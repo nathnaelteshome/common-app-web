@@ -24,7 +24,7 @@ const BLOG_ENDPOINTS = {
   SEARCH_POSTS: "/api/v1/blog/search",
 
   // Categories
-  LIST_CATEGORIES: "/api/v1/blog/categories",
+  LIST_CATEGORIES: "/api/v1/blog/categories?active=true",
   GET_CATEGORY: (id: string) => `/api/v1/blog/categories/${id}`,
   GET_CATEGORY_BY_SLUG: (slug: string) => `/api/v1/blog/categories/slug/${slug}`,
   CREATE_CATEGORY: "/api/v1/blog/categories",
@@ -85,10 +85,8 @@ export class BlogApi {
   }
 
   // Category methods
-  static async listCategories(params?: {
-    active?: boolean
-  }): Promise<ApiResponse<BlogCategoriesResponse>> {
-    return api.get<BlogCategoriesResponse>(BLOG_ENDPOINTS.LIST_CATEGORIES, params)
+  static async listCategories(): Promise<ApiResponse<BlogCategoriesResponse>> {
+    return api.get<BlogCategoriesResponse>(BLOG_ENDPOINTS.LIST_CATEGORIES)
   }
 
   static async getCategory(id: string): Promise<ApiResponse<BlogCategory>> {

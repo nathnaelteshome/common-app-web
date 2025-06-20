@@ -37,7 +37,7 @@ export function BlogCategoriesSection() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await blogApi.listCategories({ active: true })
+        const response = await blogApi.listCategories()
         
         if (response.success && response.data) {
           setCategories(response.data.categories)

@@ -49,7 +49,7 @@ export function BlogSearchFilter({
     const fetchFilterOptions = async () => {
       try {
         // Fetch categories
-        const categoriesResponse = await blogApi.listCategories({ active: true })
+        const categoriesResponse = await blogApi.listCategories()
         if (categoriesResponse.success && categoriesResponse.data) {
           setCategories(categoriesResponse.data.categories)
         }

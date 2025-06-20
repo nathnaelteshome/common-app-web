@@ -15,6 +15,14 @@ interface GuestApplicationPromptProps {
 
 export function GuestApplicationPrompt({ university, programId }: GuestApplicationPromptProps) {
   const selectedProgram = university && programId ? university.programs.find((p) => p.id === programId) : null
+  
+  // Debug logging
+  if (university && programId) {
+    console.log("GuestApplicationPrompt - University:", university.name)
+    console.log("GuestApplicationPrompt - Requested programId:", programId)
+    console.log("GuestApplicationPrompt - Available programs:", university.programs.map(p => ({ id: p.id, name: p.name })))
+    console.log("GuestApplicationPrompt - Selected program:", selectedProgram)
+  }
 
   const benefits = [
     {
@@ -79,20 +87,25 @@ export function GuestApplicationPrompt({ university, programId }: GuestApplicati
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                         <div>
                           <span className="text-gray-600">Degree:</span>
-                          <div className="font-medium">{selectedProgram.degree}</div>
+                          <div className="font-medium">{selectedProgram.degree || selectedProgram.type || 'N/A'}</div>
                         </div>
                         <div>
                           <span className="text-gray-600">Duration:</span>
-                          <div className="font-medium">{selectedProgram.duration}</div>
+                          <div className="font-medium">{selectedProgram.duration || 'N/A'}</div>
                         </div>
                         <div>
                           <span className="text-gray-600">Tuition:</span>
-                          <div className="font-medium">${selectedProgram.tuitionFee.toLocaleString()}/year</div>
+                          <div className="font-medium">
+                            {selectedProgram.tuitionFee ? `$${selectedProgram.tuitionFee.toLocaleString()}/year` : 'Contact University'}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Deadline:</span>
                           <div className="font-medium">
-                            {new Date(selectedProgram.applicationDeadline).toLocaleDateString()}
+                            {selectedProgram.applicationDeadline 
+                              ? new Date(selectedProgram.applicationDeadline).toLocaleDateString()
+                              : 'Contact University'
+                            }
                           </div>
                         </div>
                       </div>

@@ -45,25 +45,82 @@ export default function ApplyPage() {
           setSelectedUniversity(universityData)
 
           if (programId) {
-            // Verify the program exists using program API
-            try {
-              const programResponse = await programApi.getProgram(programId)
-              if (programResponse.success && programResponse.data) {
-                // Verify the program belongs to the selected university
-                if (programResponse.data.university.id === universityId) {
-                  setSelectedProgramId(programId)
+            // Check if program ID looks like a UUID
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(programId)
+            
+            if (!isUuid) {
+              // If it's not a UUID, try multiple fallback approaches
+              console.warn("Program ID is not a UUID, attempting fallback:", programId)
+              console.log("Available programs:", universityData.programs)
+              
+              if (universityData.programs && universityData.programs.length > 0) {
+                let fallbackProgram = null
+                const numericId = parseInt(programId)
+                
+                // Try different approaches to find the program
+                
+                // 1. Check if any program has this exact ID (string or number)
+                fallbackProgram = universityData.programs.find(p => 
+                  p.id === programId || 
+                  p.id === numericId || 
+                  String(p.id) === programId
+                )
+                
+                // 2. If not found, try 1-based index
+                if (!fallbackProgram && numericId > 0 && numericId <= universityData.programs.length) {
+                  fallbackProgram = universityData.programs[numericId - 1]
+                  console.log(`Trying 1-based index ${numericId}:`, fallbackProgram)
+                }
+                
+                // 3. If not found, try 0-based index
+                if (!fallbackProgram && numericId >= 0 && numericId < universityData.programs.length) {
+                  fallbackProgram = universityData.programs[numericId]
+                  console.log(`Trying 0-based index ${numericId}:`, fallbackProgram)
+                }
+                
+                // 4. If still not found, try to find by name or other properties
+                if (!fallbackProgram) {
+                  // Log available program IDs for debugging
+                  console.log("Available program IDs:", universityData.programs.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    type: typeof p.id
+                  })))
+                  
+                  setError(`Program not found. Available programs: ${universityData.programs.map(p => `${p.name} (ID: ${p.id})`).join(', ')}. Requested ID: ${programId}`)
                 } else {
-                  setError("Selected program does not belong to this university")
+                  console.log("Found fallback program:", fallbackProgram)
+                  setSelectedProgramId(fallbackProgram.id)
                 }
               } else {
-                setError("Selected program not found")
+                setError(`No programs available for this university. Program ID: ${programId}`)
               }
-            } catch (programError) {
-              console.error("Error fetching program:", programError)
-              if (apiUtils.isApiError(programError)) {
-                setError(apiUtils.getErrorMessage(programError))
-              } else {
-                setError("Selected program not found")
+            } else {
+              // Verify the program exists using program API
+              try {
+                console.log("Fetching program with UUID:", programId)
+                const programResponse = await programApi.getProgram(programId)
+                console.log("Program API response:", programResponse)
+                
+                if (programResponse.success && programResponse.data) {
+                  // Verify the program belongs to the selected university
+                  if (programResponse.data.university.id === universityId) {
+                    setSelectedProgramId(programId)
+                  } else {
+                    setError(`Program belongs to ${programResponse.data.university.name}, not the selected university`)
+                  }
+                } else {
+                  console.error("Program not found or API error:", programResponse)
+                  setError(`Program not found (ID: ${programId})`)
+                }
+              } catch (programError) {
+                console.error("Error fetching program:", programError)
+                if (apiUtils.isApiError(programError)) {
+                  const errorMsg = apiUtils.getErrorMessage(programError)
+                  setError(`Failed to load program: ${errorMsg} (ID: ${programId})`)
+                } else {
+                  setError(`Network error while loading program (ID: ${programId})`)
+                }
               }
             }
           }

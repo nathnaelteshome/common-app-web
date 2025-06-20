@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from "./client"
+import { PROGRAM_ENDPOINTS } from "./endpoints"
 import type { ApiResponse, PaginatedResponse } from "./types"
 
 // Program Types based on PROGRAM_INTEGRATION_GUIDE.md
@@ -80,15 +81,7 @@ export interface ProgramResponse {
   }
 }
 
-// Program API endpoints
-const PROGRAM_ENDPOINTS = {
-  LIST: "/api/v1/programs",
-  GET: (id: string) => `/api/v1/programs/${id}`,
-  CREATE: "/api/v1/programs",
-  UPDATE: (id: string) => `/api/v1/programs/${id}`,
-  DELETE: (id: string) => `/api/v1/programs/${id}`,
-  TYPES: "/api/v1/programs/types",
-} as const
+// Program API endpoints are imported from endpoints.ts
 
 // Program API Service
 export class ProgramApi {

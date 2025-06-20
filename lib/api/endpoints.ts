@@ -162,6 +162,18 @@ export const ANNOUNCEMENT_ENDPOINTS = {
   GET_STATS: `${API_PREFIX}/announcements/stats`,
 } as const
 
+// Program Endpoints - Complete CRUD
+export const PROGRAM_ENDPOINTS = {
+  LIST: `${API_PREFIX}/programs`,
+  CREATE: `${API_PREFIX}/programs`,
+  GET: (id: string) => `${API_PREFIX}/programs/${id}`,
+  UPDATE: (id: string) => `${API_PREFIX}/programs/${id}`,
+  DELETE: (id: string) => `${API_PREFIX}/programs/${id}`,
+  TYPES: `${API_PREFIX}/programs/types`,
+  SEARCH: `${API_PREFIX}/programs/search`,
+  BY_UNIVERSITY: (universityId: string) => `${API_PREFIX}/programs/university/${universityId}`,
+} as const
+
 // System Admin Endpoints
 export const SYSTEM_ADMIN_ENDPOINTS = {
   DASHBOARD: `${API_PREFIX}/system-admin/dashboard`,
